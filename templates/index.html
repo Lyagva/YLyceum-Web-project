@@ -11,6 +11,40 @@
 
     </head>
     <body class="bg-dark d-flex flex-column min-vh-100">
+        <script>
+            function addTextToConsole(text) {
+                var tag = document.createElement("p");
+                var text = document.createTextNode(text);
+                tag.appendChild(text);
+                var element = document.getElementById("console");
+                element.appendChild(tag);
+            }
+</script>
+
+        <script>
+            function sendData() { // Функция, вызываемая по кнопке
+                $.ajax({
+                    // Настройки
+                    type: "POST",
+                    url: "/post",
+                    data: $('form').serialize(),
+
+                    // Функции обработчики
+                    success: function(response) {
+                        var json = jQuery.parseJSON(response)
+                        addTextToConsole(json.outputText);
+                        console.log(json.outputText);
+                    },
+
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            }
+        </script>
+
+
+
         <!-- Navbar -->
         <header>
             <nav class="nav nav-dark nav-tabs nav-fill nav-static-top bg-dark">
@@ -21,7 +55,7 @@
         </header>
 
         <!-- Main block (console) -->
-        <main role="main" class="container bg-dark text-light">
+        <main role="main" id="console" class="container bg-dark text-light">
             <p class="mt-2">Booting OS...</p> <!-- Тут нужен класс "mt-2", для небольшого отступа сверху -->
             <p>Text1...</p>
             <p>Text2...</p>
@@ -33,10 +67,10 @@
         <!-- Footer (ввод команды) -->
         <footer class="footer bg-dark" style="padding-top: 60px;">
             <div class="container-fluid">
-                <form class="">
+                <form class="" name="form" method="post">
                     <div class="row g-3">
                         <div class="col">
-                            <input class="form-control bg-dark text-light" type="text"  placeholder="Command >>>">
+                            <input class="form-control bg-dark text-light" name="commandInput" type="text" placeholder="Command >>>">
                         </div>
                         <div class="col-sm-1">
                             <button class="form-control bg-dark text-light" type="submit">Send</button>

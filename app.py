@@ -11,5 +11,14 @@ log = Logger.set_logging()
 def index():
     return render_template("index.html")
 
+@app.route("/post", methods=["GET", "POST"])
+def post():
+    return "Some Cool text"
+
+@app.route("/update", methods=["GET", "POST"])
+def update():
+    return ""
+
+
 if __name__ == "__main__":
     app.run()
