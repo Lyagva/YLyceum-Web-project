@@ -1,5 +1,5 @@
-def command_help(*args):
-    from get_commands import get_all_commands
+def command_help(addr, *args):
+    from Command.get_commands import get_all_commands
 
     return_data = "name \t syntax \t description\n"
 
@@ -8,6 +8,9 @@ def command_help(*args):
 
     return return_data
 
-def command_debug(*args):
-    return f"DEBUG MESSAGE"
+def command_debug(addr, *args):
+    from datetime import datetime
+    return_data = f"sender address \t {addr}\n"
+    return_data += f"server time \t {datetime.now()}"
 
+    return return_data

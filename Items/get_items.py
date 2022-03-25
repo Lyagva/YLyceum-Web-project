@@ -4,7 +4,7 @@ from data import db_session, __all_models
 def get_all_armor():
     items_list = []
 
-    db_session.global_init("../db/main.db")
+    db_session.global_init("db/main.db")
 
 
     db_sess = db_session.create_session()
@@ -17,7 +17,7 @@ def get_all_armor():
 def get_all_melee():
     items_list = []
 
-    db_session.global_init("../db/main.db")
+    db_session.global_init("db/main.db")
 
 
     db_sess = db_session.create_session()
