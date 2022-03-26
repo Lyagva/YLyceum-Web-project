@@ -37,6 +37,14 @@ class Armor(SqlAlchemyBase):
 
     description = sqlalchemy.Column(sqlalchemy.String)
 
+    # Тут находятся все свойства предмета в формате JSON
+    """
+    def (defence) - число. Базовая защита
+    weight - число. Вес снаряжения
+    ms (move speed) - число. Скорость действий с экипированным оружием
+    """
+    stats = sqlalchemy.Column(sqlalchemy.JSON)
+
 
 class Melee(SqlAlchemyBase):
     __tablename__ = "melee"
@@ -49,3 +57,53 @@ class Melee(SqlAlchemyBase):
     melee_type = sqlalchemy.Column(sqlalchemy.String)
 
     description = sqlalchemy.Column(sqlalchemy.String)
+
+
+    # Тут находятся все свойства предмета в формате JSON
+    """
+    dmg - число. Базовый урон
+    hc (hit chance) - число [0; 100]. Базовые шансы попасть в противника
+    as (attack speed) - число. Базовая скорость атаки
+    ms (move speed) - число. Скорость действий с экипированным оружием
+    """
+    stats = sqlalchemy.Column(sqlalchemy.JSON)
+
+
+class Range(SqlAlchemyBase):
+    __tablename__ = "range"
+
+
+    name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+
+    # [bullet, laser]
+    # Стреляющие: [пулями, лазерами]
+    range_type = sqlalchemy.Column(sqlalchemy.String)
+
+    description = sqlalchemy.Column(sqlalchemy.String)
+
+
+    # Тут находятся все свойства предмета в формате JSON
+    """
+    dmg - число. Базовый урон
+    hc (hit chance) - число [0; 100]. Базовые шансы попасть в противника
+    as (attack speed) - число. Скорострельность
+    mb (magazine bullets) - число. Кол-во патронов в магазине
+    ms (move speed) - число. Скорость действий с экипированным оружием
+    """
+    stats = sqlalchemy.Column(sqlalchemy.JSON)
+
+
+class ItemHealth(SqlAlchemyBase):
+    __tablename__ = "item_health"
+
+
+    name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+
+    description = sqlalchemy.Column(sqlalchemy.String)
+
+
+    # Тут находятся все свойства предмета в формате JSON
+    """
+    ra (regeneration amount) - число. Те единицы здоровья, которые восстановит аптечка 
+    """
+    stats = sqlalchemy.Column(sqlalchemy.JSON)
