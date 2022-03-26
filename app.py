@@ -15,14 +15,12 @@ def index():
 
 @app.route("/sendData", methods=["GET", "POST"])
 def post():
+    textIn = request.form["commandInput"]
+    textOut = parse_command(request.remote_addr, textIn)
 
-    outputText = parse_command(request.remote_addr, request.form["commandInput"])
+    outputText = f">>> {textIn}\n\n{textOut}"
 
     return json.dumps({"outputText": outputText})
-
-@app.route("/update", methods=["GET", "POST"])
-def update():
-    return ""
 
 
 if __name__ == "__main__":

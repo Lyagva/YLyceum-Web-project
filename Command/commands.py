@@ -1,28 +1,11 @@
 from data import __all_models, db_session
 
 
-def command_help(addr, *args):
-    from Command.get_commands import get_all_commands
 
-    return_data = "name \t syntax \t description\n"
-
-    for command in get_all_commands():
-        return_data += f"{command[0]} \t {command[1]} \t {command[2]}\n"
-
-    return return_data
-
-
-def command_debug(addr, *args):
-    from datetime import datetime
-    return_data = f"sender address \t {addr}\n"
-    return_data += f"server time \t {datetime.now()}\n"
-    return_data += f"user \t {find_user_by_ip(addr) if find_user_by_ip(addr) else 'user not found'}"
-
-    return return_data
-
-
+# ======== LOGIN AND USERS ========
 def get_users():
     return list(map(lambda user: user, db_session.create_session().query(__all_models.Users).all()))
+
 
 def find_user_by_ip(addr):
     for user in get_users():
@@ -77,3 +60,29 @@ def command_login(addr, *args):
     db_sess.commit()
 
     return 'You successfully created new account'
+
+
+
+# ======== CONSOLE COMMANDS ========
+def command_help(addr, *args):
+    from Command.get_commands import get_all_commands
+
+    return_data = "name \t syntax \t description\n"
+
+    for command in get_all_commands():
+        return_data += f"{command[0]} \t {command[1]} \t {command[2]}\n"
+
+    return return_data
+
+
+def command_debug(addr, *args):
+    from datetime import datetime
+    return_data = f"sender address \t {addr}\n"
+    return_data += f"server time \t {datetime.now()}\n"
+    return_data += f"user \t {find_user_by_ip(addr) if find_user_by_ip(addr) else 'user not found'}"
+
+    return return_data
+
+
+def command_clear(addr, *args):
+    return "!!clear"

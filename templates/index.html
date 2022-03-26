@@ -21,9 +21,23 @@
                 var element = document.getElementById("console");
                 element.appendChild(tag);
             }
-</script>
+        </script>
 
         <script>
+            function consoleClear() {
+                var consoleNode = document.getElementById("console");
+                consoleNode.innerHTML = "";
+            }
+        </script>
+
+        <script>
+            function submitForm() {
+                sendData();
+                var textField = document.getElementById('commandInput');
+                textField.value = "";
+            }
+
+
             function sendData() { // Функция, вызываемая по кнопке
                 $.ajax({
                     // Настройки
@@ -34,25 +48,16 @@
                     // Функции обработчики
                     success: function(response) {
                         var json = jQuery.parseJSON(response)
-                        addTextToConsole(json.outputText);
-                        console.log(json.outputText);
-                    },
+                        message = json.outputText;
+                        messageArray = message.split("\n");
 
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
-            }
+                        if (messageArray[messageArray.length - 1] == "!!clear") {
+                            consoleClear();
+                            return;
+                        }
 
-            function update() { // Функция, вызываемая по кнопке
-                $.ajax({
-                    // Настройки
-                    type: "GET",
-                    url: "/update",
-
-                    // Функции обработчики
-                    success: function(response) {
-                        console.log(json.outputText[0]);
+                        addTextToConsole(message);
+                        console.log(message);
                     },
 
                     error: function(error) {
@@ -80,10 +85,10 @@
         <!-- Footer (ввод команды) -->
         <footer class="footer bg-dark" style="padding-top: 60px;">
             <div class="container-fluid">
-                <form name="form" id="form" autocomplete="off" spellcheck="false" onsubmit="javascript:sendData();return false;">
+                <form name="form" id="form" autocomplete="off" spellcheck="false" onsubmit="javascript:submitForm();return false;">
                     <div class="row g-3">
                         <div class="col">
-                            <input name="commandInput" type="text" placeholder="Command >>>" class="form-control bg-dark text-light">
+                            <input id="commandInput" name="commandInput" type="text" placeholder="Command >>>" class="form-control bg-dark text-light">
                         </div>
                         <div class="col-sm-1">
                             <button class="form-control bg-dark text-light" type="submit">Send</button>
