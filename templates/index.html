@@ -43,6 +43,23 @@
                     }
                 });
             }
+
+            function update() { // Функция, вызываемая по кнопке
+                $.ajax({
+                    // Настройки
+                    type: "GET",
+                    url: "/update",
+
+                    // Функции обработчики
+                    success: function(response) {
+                        console.log(json.outputText[0]);
+                    },
+
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            }
         </script>
 
         <!-- Navbar -->
@@ -56,16 +73,6 @@
 
         <!-- Main block (console) -->
         <main role="main" id="console" class="container bg-dark text-light">
-
-            <button id="myScroll" style="float: right">Вниз</button>
-
-            <script>
-                document.getElementById('myScroll').addEventListener('click', scrollToElement);
-                function scrollToElement(e) {
-                element = document.getElementById("form")
-                element.scrollIntoView(true);
-                }
-            </script>
 
         </main>
 
