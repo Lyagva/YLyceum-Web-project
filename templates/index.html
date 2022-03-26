@@ -56,6 +56,17 @@
 
         <!-- Main block (console) -->
         <main role="main" id="console" class="container bg-dark text-light">
+
+            <button id="myScroll" style="float: right">Вниз</button>
+
+            <script>
+                document.getElementById('myScroll').addEventListener('click', scrollToElement);
+                function scrollToElement(e) {
+                element = document.getElementById("form")
+                element.scrollIntoView(true);
+                }
+            </script>
+
         </main>
 
 
