@@ -1,0 +1,6 @@
+CODE;EN
+NO_NAME;No username provided
+NO_PASSWORD;No password provided
+INCORRECT_PASSWORD;The name is busy or the password is incorrect
+LOGIN_SUCCESS;You successfully logged to your account
+NEW_ACC_SUCCESS;You successfully created new account

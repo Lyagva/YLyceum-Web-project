@@ -1,6 +1,25 @@
 from data import __all_models, db_session
 
 
+def get_locale_command(code, lang='EN'):
+    import csv
+
+    abbreav = {}
+    with open('../csv/localize_commands.csv', encoding="utf8") as csvfile:
+        reader = csv.reader(csvfile, delimiter=';', quotechar='"')
+        lst = list(map(lambda x: x, reader))
+
+    for i, abb in enumerate(lst[0]):
+        abbreav[abb] = i
+
+    if lang not in abbreav.keys():
+        return "Unsupported lang"
+
+    for line in lst[1:]:
+        if code in line:
+            return line[abbreav[lang]]
+
+    return "Phrase not found"
 
 # ======== LOGIN AND USERS ========
 def get_users():
@@ -18,19 +37,19 @@ def command_login(addr, *args):
     if len(args) >= 1:
         user_name = args[0]
     else:
-        return "No username provided"
+        return get_locale_command('NO_NAME', lang='EN')
 
     if len(args) >= 2:
         password = args[1]
     else:
-        return "No password provided"
+        return get_locale_command('NO_PASSWORD', lang='EN')
 
     for user in get_users():
         if user.login != user_name:
             continue
 
         if not user.check_password(password):
-            return 'The name is busy or the password is incorrect'
+            return get_locale_command('INCORRECT_PASSWORD', lang='EN')
         else:
             db_sess = db_session.create_session()
 
@@ -43,7 +62,7 @@ def command_login(addr, *args):
             user.ip = addr
             db_sess.commit()
 
-            return 'You successfully logged to your account'
+            return get_locale_command('LOGIN_SUCCESS', lang='EN')
 
     user = __all_models.Users()
     user.login = user_name
@@ -59,7 +78,7 @@ def command_login(addr, *args):
     db_sess.add(user)
     db_sess.commit()
 
-    return 'You successfully created new account'
+    return get_locale_command('NEW_ACC_SUCCESS', lang='EN')
 
 
 
@@ -86,3 +105,7 @@ def command_debug(addr, *args):
 
 def command_clear(addr, *args):
     return "!!clear"
+
+
+if __name__ == '__main__':
+    print(get_locale_command('NO_NAME', lang='EN'))
