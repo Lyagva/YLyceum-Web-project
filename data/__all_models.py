@@ -9,6 +9,7 @@ class Users(SqlAlchemyBase):
     login = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
     password = sqlalchemy.Column(sqlalchemy.String)
     ip = sqlalchemy.Column(sqlalchemy.String)
+    lang = sqlalchemy.Column(sqlalchemy.String, default="EN")
 
     def set_password(self, password):
         self.password = generate_password_hash(password)

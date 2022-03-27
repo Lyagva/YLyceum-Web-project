@@ -1,25 +1,57 @@
 from data import __all_models, db_session
 
+# ======== LOCALIZATION ========
+special_symbols = {"~n": "\n", "~t": "\t"}
 
-def get_locale_command(code, lang='EN'):
-    import csv
+def localize(code, addr, args=[]):
+    from csv import reader
 
-    abbreav = {}
-    with open('../csv/localize_commands.csv', encoding="utf8") as csvfile:
-        reader = csv.reader(csvfile, delimiter=';', quotechar='"')
-        lst = list(map(lambda x: x, reader))
+    lang = "EN"
+    username = find_user_by_ip(addr)
+    if username is not None:
+        for user in get_users():
+            if user.login == username:
+                lang = user.lang
 
-    for i, abb in enumerate(lst[0]):
-        abbreav[abb] = i
 
-    if lang not in abbreav.keys():
-        return "Unsupported lang"
 
-    for line in lst[1:]:
-        if code in line:
-            return line[abbreav[lang]]
+    # Reading csv file
+    with open('csv/localize_commands.csv', encoding="utf8") as csvfile:
+        reader = reader(csvfile, delimiter=';', quotechar='"')
+        data = list(map(lambda x: x, reader)) # Storing data to list
+
+    keys = {}
+    for i, value in enumerate(data[0]):
+        keys[value] = i # getting keys dict {<header>: <ind>}
+    phrases = data[1:] # getting all phrases
+
+    for line in phrases: # going through all lines
+        if code == line[0]: # check if line.code == code
+            output = str(line[keys[lang]]) # setting output
+
+            for key in special_symbols.keys():
+                output = output.replace(key, special_symbols[key])
+
+            for i in range(min(output.count("{}"), len(args))):
+                output = output.replace("{}", args[i], 1)
+
+            return output
 
     return "Phrase not found"
+
+
+def get_all_langs():
+    from csv import reader
+    with open('csv/localize_commands.csv', encoding="utf8") as csvfile:
+        reader = reader(csvfile, delimiter=';', quotechar='"')
+        data = list(map(lambda x: x, reader)) # Storing data to list
+
+    keys = []
+    for value in data[0][1:]:
+        keys.append(str(value))
+
+    return keys
+
 
 # ======== LOGIN AND USERS ========
 def get_users():
@@ -35,21 +67,21 @@ def find_user_by_ip(addr):
 
 def command_login(addr, *args):
     if len(args) >= 1:
-        user_name = args[0]
+        username = args[0]
     else:
-        return get_locale_command('NO_NAME', lang='EN')
+        return localize('LOGIN_NO_NAME', addr)
 
     if len(args) >= 2:
         password = args[1]
     else:
-        return get_locale_command('NO_PASSWORD', lang='EN')
+        return localize('LOGIN_NO_PASSWORD', addr)
 
     for user in get_users():
-        if user.login != user_name:
+        if user.login != username:
             continue
 
         if not user.check_password(password):
-            return get_locale_command('INCORRECT_PASSWORD', lang='EN')
+            return localize('LOGIN_INCORRECT_PASSWORD', addr, args=[username])
         else:
             db_sess = db_session.create_session()
 
@@ -62,10 +94,10 @@ def command_login(addr, *args):
             user.ip = addr
             db_sess.commit()
 
-            return get_locale_command('LOGIN_SUCCESS', lang='EN')
+            return localize('LOGIN_SUCCESS', addr, args=[username])
 
     user = __all_models.Users()
-    user.login = user_name
+    user.login = username
     user.set_password(password)
     user.ip = addr
     db_sess = db_session.create_session()
@@ -78,7 +110,7 @@ def command_login(addr, *args):
     db_sess.add(user)
     db_sess.commit()
 
-    return get_locale_command('NEW_ACC_SUCCESS', lang='EN')
+    return localize('LOGIN_NEW_ACC_SUCCESS', addr, args=[username])
 
 
 
@@ -86,10 +118,11 @@ def command_login(addr, *args):
 def command_help(addr, *args):
     from Command.get_commands import get_all_commands
 
-    return_data = "name \t syntax \t description\n"
+    return_data = localize("HELP_HEADER", addr)
 
     for command in get_all_commands():
-        return_data += f"{command[0]} \t {command[1]} \t {command[2]}\n"
+        description = localize(command[2], addr)
+        return_data += localize("HELP_FORMAT", addr, args=[command[0], command[1], description])
 
     return return_data
 
@@ -107,5 +140,23 @@ def command_clear(addr, *args):
     return "!!clear"
 
 
+def command_lang(addr, *args):
+    all_langs = map(lambda x: x.lower(), get_all_langs())
+
+    if len(args) < 1:
+        return localize("LANG_NO_LANG", addr, args=[", ".join(all_langs)])
+    lang = args[0]
+
+    if lang not in all_langs:
+        return localize("LANG_INCORRECT", addr, args=[lang])
+
+
+    db_sess = db_session.create_session()
+    user = db_sess.query(__all_models.Users).filter_by(ip=addr).first()
+    user.lang = lang.upper()
+    db_sess.commit()
+
+    return localize("LANG_SUCCESS", addr, args=[lang])
+
 if __name__ == '__main__':
-    print(get_locale_command('NO_NAME', lang='EN'))
+    pass
