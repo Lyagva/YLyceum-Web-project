@@ -6,6 +6,7 @@ HELP_DEBUG;Just a debug command for testers
 HELP_LOGIN;Used to login into account or create new one
 HELP_CLEAR;Clears all console outputs
 HELP_LANG;Changes current language. To get all languages use "lang"
+HELP_STATUS; Displays the player's status
 ;
 LOGIN_NO_NAME;No username provided
 LOGIN_NO_PASSWORD;No password provided
@@ -16,3 +17,6 @@ LOGIN_NEW_ACC_SUCCESS;You successfully created new account with name "{}". Don't
 LANG_NO_LANG;No language provided~nAll available languages: {}
 LANG_INCORRECT;Incorrect language "{}"~nView all languages using "lang"
 LANG_SUCCESS;Successfully changed account language to "{}"
+;
+STATUS_NO_USER;Expected username
+STATUS_NO_USER_IN_BD;Such a user does not exist

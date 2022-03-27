@@ -58,11 +58,35 @@ def get_users():
     return list(map(lambda user: user, db_session.create_session().query(__all_models.Users).all()))
 
 
+def get_user_params():
+    return list(map(lambda user_p: user_p, db_session.create_session().query(__all_models.UsersParams).all()))
+
+
 def find_user_by_ip(addr):
     for user in get_users():
         if user.ip == addr:
             return user.login
     return None
+
+
+def find_user_params_by_name(name):
+    for user_p in get_user_params():
+        if user_p.name == name:
+            import json
+
+            return json.loads(user_p.parameters)
+    return None
+
+
+def clear_old_data_ip(addr):
+    db_sess = db_session.create_session()
+
+    prev_user = find_user_by_ip(addr)
+    if prev_user:
+        prev_user = db_sess.query(__all_models.Users).get(prev_user)
+        prev_user.ip = None
+
+    db_sess.commit()
 
 
 def command_login(addr, *args):
@@ -83,31 +107,45 @@ def command_login(addr, *args):
         if not user.check_password(password):
             return localize('LOGIN_INCORRECT_PASSWORD', addr, args=[username])
         else:
+            clear_old_data_ip(addr)
+
             db_sess = db_session.create_session()
 
-            prev_user = find_user_by_ip(addr)
-            if prev_user:
-                prev_user = db_sess.query(__all_models.Users).get(prev_user)
-                prev_user.ip = None
-
             user = db_sess.query(__all_models.Users).get(user.login)
+
             user.ip = addr
+
             db_sess.commit()
 
             return localize('LOGIN_SUCCESS', addr, args=[username])
+
+    clear_old_data_ip(addr)
 
     user = __all_models.Users()
     user.login = username
     user.set_password(password)
     user.ip = addr
+
+    standart = {
+                "hp": 100,  # базовое здоровье
+                "energy": 5,  # базовое кол-во действий за ход
+                "defence": 5,  # базовая защита
+                "mattack": 5,  # базовый урон в ближнем бою
+                "acc": 5,  # базовая точность %. 0.05 при расчётах
+                "lvl": 1,  # уровень
+                }
+
+    user_params = __all_models.UsersParams()
+    user_params.name = username
+    user_params.ip = addr
+    import json
+
+    user_params.parameters = json.dumps(standart)
+
     db_sess = db_session.create_session()
 
-    prev_user = find_user_by_ip(addr)
-    if prev_user:
-        prev_user = db_sess.query(__all_models.Users).get(prev_user)
-        prev_user.ip = None
-
     db_sess.add(user)
+    db_sess.add(user_params)
     db_sess.commit()
 
     return localize('LOGIN_NEW_ACC_SUCCESS', addr, args=[username])
@@ -150,13 +188,33 @@ def command_lang(addr, *args):
     if lang not in all_langs:
         return localize("LANG_INCORRECT", addr, args=[lang])
 
-
     db_sess = db_session.create_session()
     user = db_sess.query(__all_models.Users).filter_by(ip=addr).first()
     user.lang = lang.upper()
     db_sess.commit()
 
     return localize("LANG_SUCCESS", addr, args=[lang])
+
+
+def command_status(addr, *args):
+    print('WE ARE THERE')
+    if len(args) < 1:
+        return localize("STATUS_NO_USER", addr)
+
+    username = args[0]
+
+    user_params = find_user_params_by_name(username)
+
+    if user_params is None:
+        return localize("STATUS_NO_USER_IN_BD", addr)
+
+    return_data = []
+    for key, val in user_params.items():
+        return_data.append(f'{key}: {val}')
+
+    return '\n'.join(return_data)
+
+
 
 if __name__ == '__main__':
     pass

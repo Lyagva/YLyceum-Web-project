@@ -3,6 +3,12 @@ from .db_session import SqlAlchemyBase
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+class UsersParams(SqlAlchemyBase):
+    __tablename__ = 'player_parameters'
+    name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    parameters = sqlalchemy.Column(sqlalchemy.JSON)
+
+
 class Users(SqlAlchemyBase):
     __tablename__ = "users"
 
