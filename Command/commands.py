@@ -90,6 +90,8 @@ def clear_old_data_ip(addr):
 
 
 def command_login(addr, *args):
+    from cryptography.fernet import Fernet
+
     if len(args) >= 1:
         username = args[0]
     else:
@@ -104,7 +106,7 @@ def command_login(addr, *args):
         if user.login != username:
             continue
 
-        if not user.check_password(password):
+        if Fernet(user.key_code_password).decrypt(user.password).decode('utf-8') != password:
             return localize('LOGIN_INCORRECT_PASSWORD', addr, args=[username])
         else:
             clear_old_data_ip(addr)
@@ -121,9 +123,12 @@ def command_login(addr, *args):
 
     clear_old_data_ip(addr)
 
+    key = Fernet.generate_key()
+
     user = __all_models.Users()
     user.login = username
-    user.set_password(password)
+    user.key_code_password = key
+    user.password = Fernet(key).encrypt(bytes(password, 'utf-8'))
     user.ip = addr
 
     standart = {
@@ -206,13 +211,95 @@ def command_status(addr, *args):
     user_params = find_user_params_by_name(username)
 
     if user_params is None:
-        return localize("STATUS_NO_USER_IN_BD", addr)
+        return localize("STATUS_NO_USER_IN_BD", addr, args=[username])
 
     return_data = []
     for key, val in user_params.items():
         return_data.append(f'{key}: {val}')
 
     return '\n'.join(return_data)
+
+
+def command_email(addr, *args):
+    if len(args) < 1:
+        return localize("EMAIL_NO_FOUND", addr)
+
+    username = find_user_by_ip(addr)
+    if username is None:
+        return localize("EMAIL_NO_LOGGED", addr)
+
+    email = args[0]
+    db_sess = db_session.create_session()
+    for user in db_sess.query(__all_models.Users).all():
+        if user.login == username:
+            print('email SUCCESS')
+            user.email = email
+    db_sess.commit()
+    return localize("EMAIL_ADD_SUCCESS", addr, args=[email, username])
+
+
+def send_user_password(addr, user):
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import smtplib
+    import os
+    from dotenv import load_dotenv
+    from cryptography.fernet import Fernet
+
+    message = f'''
+    Hello. 
+    You have requested password recovery from account {user.login} in the Lambda-14 game. 
+    Your password: {Fernet(user.key_code_password).decrypt(user.password).decode('utf-8')}
+    '''
+    try:
+        # setup the parameters of the message
+
+        load_dotenv()
+        password = os.getenv('EMAIL_PASSWORD')
+
+        # create server
+        server = smtplib.SMTP('smtp.gmail.com: 587')
+
+        server.starttls()
+
+        msg = MIMEMultipart()
+
+        msg['From'] = 'lambda.games.supp@gmail.com'
+        msg['Subject'] = "Password recovery"
+
+        msg['To'] = user.email
+
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Login Credentials for sending the mail
+        server.login(msg['From'], password)
+
+        # send the message via the server.
+        server.sendmail(msg['From'], msg['To'], msg.as_string())
+    except Exception as e:
+        return localize("PASSWORD_RECOVERY_EMAIL_NOT_VALID", addr)
+
+    return localize("PASSWORD_RECOVERY_SUCCESS_SEND_MAIL", addr, args=[user.login])
+
+
+def command_password_recovery(addr, *args):
+    if len(args) < 1:
+        return localize("PASSWORD_RECOVERY_NO_USERNAME", addr)
+
+    username = args[0]
+
+    usr = None
+    for user in get_users():
+        if user.login == username:
+            usr = user
+
+    if usr is None:
+        return localize("PASSWORD_RECOVERY_NO_USER_IN_BD", addr, args=[username])
+
+    if not usr.email:
+        return localize("PASSWORD_RECOVERY_NO_USER_EMAIL", addr, args=[username])
+
+    return send_user_password(addr, usr)
 
 
 
