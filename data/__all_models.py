@@ -1,12 +1,30 @@
+import json
+
 import sqlalchemy
 from .db_session import SqlAlchemyBase
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+# ======== Users ========
 class UsersParams(SqlAlchemyBase):
-    __tablename__ = 'player_parameters'
+    __tablename__ = 'userParams'
+
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-    parameters = sqlalchemy.Column(sqlalchemy.JSON)
+
+    default_stats = {
+        "lvl": 1,  # уровень
+        "money": 100,  # деньги
+        "hp": 100,  # базовое здоровье
+        "energy": 5,  # базовое кол-во действий за ход
+        "defence": 5,  # базовая защита
+        "attack": 5,  # базовый урон в ближнем бою
+        "acc": 5,  # базовая точность %. 0.05 при расчётах
+    }
+    stats = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_stats))
+
+    # [count, durability, table, itemName]
+    default_items = {"items": [[1, -1, "itemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
+    items = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_items))
 
 
 class Users(SqlAlchemyBase):
@@ -26,6 +44,9 @@ class Users(SqlAlchemyBase):
         return check_password_hash(self.password, password)
 
 
+
+# ======== Commands ========
+
 class Commands(SqlAlchemyBase):
     __tablename__ = "commands"
 
@@ -35,85 +56,70 @@ class Commands(SqlAlchemyBase):
     python_func = sqlalchemy.Column(sqlalchemy.String)
 
 
-class Armor(SqlAlchemyBase):
-    __tablename__ = "armor"
+
+# ======== Inventory ========
+class ItemMaterial(SqlAlchemyBase):
+    __tablename__ = "itemMaterial"
 
 
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    description = sqlalchemy.Column(sqlalchemy.String)
+    price = sqlalchemy.Column(sqlalchemy.Integer)
+
+
+class ItemHeal(SqlAlchemyBase):
+    __tablename__ = "itemHeal"
+
+
+    name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    description = sqlalchemy.Column(sqlalchemy.String)
+    price = sqlalchemy.Column(sqlalchemy.Integer)
+    healAmount = sqlalchemy.Column(sqlalchemy.Integer)
+
+
+class ItemArmor(SqlAlchemyBase):
+    __tablename__ = "itemArmor"
+
+
+    name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    description = sqlalchemy.Column(sqlalchemy.String)
+    price = sqlalchemy.Column(sqlalchemy.Integer)
 
     # [head, torso, hands, legs, feet]
     # [голова, тело, ладони, ноги, ступни]
     slot = sqlalchemy.Column(sqlalchemy.String)
-
-    description = sqlalchemy.Column(sqlalchemy.String)
-
-    # Тут находятся все свойства предмета в формате JSON
-    """
-    def (defence) - число. Базовая защита
-    weight - число. Вес снаряжения
-    ms (move speed) - число. Скорость действий с экипированным оружием
-    """
-    stats = sqlalchemy.Column(sqlalchemy.JSON)
+    defence = sqlalchemy.Column(sqlalchemy.Integer)
 
 
-class Melee(SqlAlchemyBase):
-    __tablename__ = "melee"
-
+class ItemMeleeWeapon(SqlAlchemyBase):
+    __tablename__ = "itemMeleeWeapon"
 
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-
-    # [blade, knife, katana, light_saber]
-    # [лезвие (меч), нож, катана, световой меч (пасхалка)]
-    melee_type = sqlalchemy.Column(sqlalchemy.String)
-
     description = sqlalchemy.Column(sqlalchemy.String)
+    price = sqlalchemy.Column(sqlalchemy.Integer)
+
+    energyCost = sqlalchemy.Column(sqlalchemy.Integer)
+    damage = sqlalchemy.Column(sqlalchemy.Integer)
+    piercing = sqlalchemy.Column(sqlalchemy.Integer)
 
 
-    # Тут находятся все свойства предмета в формате JSON
-    """
-    dmg - число. Базовый урон
-    hc (hit chance) - число [0; 100]. Базовые шансы попасть в противника
-    as (attack speed) - число. Базовая скорость атаки
-    ms (move speed) - число. Скорость действий с экипированным оружием
-    """
-    stats = sqlalchemy.Column(sqlalchemy.JSON)
-
-
-class Range(SqlAlchemyBase):
-    __tablename__ = "range"
-
+class ItemRangeWeapon(SqlAlchemyBase):
+    __tablename__ = "itemRangeWeapon"
 
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-
-    # [bullet, laser]
-    # Стреляющие: [пулями, лазерами]
-    range_type = sqlalchemy.Column(sqlalchemy.String)
-
     description = sqlalchemy.Column(sqlalchemy.String)
+    price = sqlalchemy.Column(sqlalchemy.Integer)
+
+    energyCost = sqlalchemy.Column(sqlalchemy.Integer)
+    damage = sqlalchemy.Column(sqlalchemy.Integer)
+    piercing = sqlalchemy.Column(sqlalchemy.Integer)
+    ammoType = sqlalchemy.Column(sqlalchemy.String)
+    hitChance = sqlalchemy.Column(sqlalchemy.Integer) # %
 
 
-    # Тут находятся все свойства предмета в формате JSON
-    """
-    dmg - число. Базовый урон
-    hc (hit chance) - число [0; 100]. Базовые шансы попасть в противника
-    as (attack speed) - число. Скорострельность
-    mb (magazine bullets) - число. Кол-во патронов в магазине
-    ms (move speed) - число. Скорость действий с экипированным оружием
-    """
-    stats = sqlalchemy.Column(sqlalchemy.JSON)
-
-
-class ItemHealth(SqlAlchemyBase):
-    __tablename__ = "item_health"
-
+class ItemAmmo(SqlAlchemyBase):
+    __tablename__ = "itemAmmo"
 
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-
     description = sqlalchemy.Column(sqlalchemy.String)
-
-
-    # Тут находятся все свойства предмета в формате JSON
-    """
-    ra (regeneration amount) - число. Те единицы здоровья, которые восстановит аптечка 
-    """
-    stats = sqlalchemy.Column(sqlalchemy.JSON)
+    price = sqlalchemy.Column(sqlalchemy.Integer)

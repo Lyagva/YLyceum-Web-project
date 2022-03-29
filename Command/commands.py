@@ -1,10 +1,13 @@
 from data import __all_models, db_session
+import json
 
 # ======== LOCALIZATION ========
 special_symbols = {"~n": "\n", "~t": "\t"}
 
 def localize(code, addr, args=[]):
     from csv import reader
+
+    args = list(map(str, args))
 
     lang = "EN"
     username = find_user_by_ip(addr)
@@ -16,7 +19,7 @@ def localize(code, addr, args=[]):
 
 
     # Reading csv file
-    with open('csv/localize_commands.csv', encoding="utf8") as csvfile:
+    with open('csv/localizations.csv', encoding="utf8") as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
         data = list(map(lambda x: x, reader)) # Storing data to list
 
@@ -74,8 +77,35 @@ def find_user_params_by_name(name):
         if user_p.name == name:
             import json
 
-            return json.loads(user_p.parameters)
+            return json.loads(user_p.stats)
     return None
+
+
+def edit_user_stats(key, value, type="+", addr="", username=""):
+    # type
+    # + add, = set, * mul
+    if addr:
+        username = find_user_by_ip(addr)
+    elif username == "":
+        return
+
+    stats = find_user_params_by_name(username)
+
+    if type == "+":
+        stats[key] += value
+    elif type == "*":
+        stats[key] *= value
+    elif type == "=":
+        stats[key] = value
+
+
+    db_sess = db_session.create_session()
+
+    user_params = db_sess.query(__all_models.UsersParams).get(username)
+    user_params.stats = json.dumps(stats)
+
+    db_sess.add(user_params)
+    db_sess.commit()
 
 
 def clear_old_data_ip(addr):
@@ -121,6 +151,8 @@ def command_login(addr, *args):
 
             return localize('LOGIN_SUCCESS', addr, args=[username])
 
+    # ======== REGISTRATION ========
+
     clear_old_data_ip(addr)
 
     key = Fernet.generate_key()
@@ -131,22 +163,12 @@ def command_login(addr, *args):
     user.password = Fernet(key).encrypt(bytes(password, 'utf-8'))
     user.ip = addr
 
-    standart = {
-                "hp": 100,  # базовое здоровье
-                "energy": 5,  # базовое кол-во действий за ход
-                "defence": 5,  # базовая защита
-                "mattack": 5,  # базовый урон в ближнем бою
-                "acc": 5,  # базовая точность %. 0.05 при расчётах
-                "lvl": 1,  # уровень
-                }
 
+    # Params
     user_params = __all_models.UsersParams()
     user_params.name = username
-    user_params.ip = addr
-    import json
 
-    user_params.parameters = json.dumps(standart)
-
+    # Dumping to DB
     db_sess = db_session.create_session()
 
     db_sess.add(user)
@@ -154,70 +176,6 @@ def command_login(addr, *args):
     db_sess.commit()
 
     return localize('LOGIN_NEW_ACC_SUCCESS', addr, args=[username])
-
-
-
-# ======== CONSOLE COMMANDS ========
-def command_help(addr, *args):
-    from Command.get_commands import get_all_commands
-
-    return_data = localize("HELP_HEADER", addr)
-
-    for command in get_all_commands():
-        description = localize(command[2], addr)
-        return_data += localize("HELP_FORMAT", addr, args=[command[0], command[1], description])
-
-    return return_data
-
-
-def command_debug(addr, *args):
-    from datetime import datetime
-    return_data = f"sender address \t {addr}\n"
-    return_data += f"server time \t {datetime.now()}\n"
-    return_data += f"user \t {find_user_by_ip(addr) if find_user_by_ip(addr) else 'user not found'}"
-
-    return return_data
-
-
-def command_clear(addr, *args):
-    return "!!clear"
-
-
-def command_lang(addr, *args):
-    all_langs = map(lambda x: x.lower(), get_all_langs())
-
-    if len(args) < 1:
-        return localize("LANG_NO_LANG", addr, args=[", ".join(all_langs)])
-    lang = args[0]
-
-    if lang not in all_langs:
-        return localize("LANG_INCORRECT", addr, args=[lang])
-
-    db_sess = db_session.create_session()
-    user = db_sess.query(__all_models.Users).filter_by(ip=addr).first()
-    user.lang = lang.upper()
-    db_sess.commit()
-
-    return localize("LANG_SUCCESS", addr, args=[lang])
-
-
-def command_status(addr, *args):
-    print('WE ARE THERE')
-    if len(args) < 1:
-        return localize("STATUS_NO_USER", addr)
-
-    username = args[0]
-
-    user_params = find_user_params_by_name(username)
-
-    if user_params is None:
-        return localize("STATUS_NO_USER_IN_BD", addr, args=[username])
-
-    return_data = []
-    for key, val in user_params.items():
-        return_data.append(f'{key}: {val}')
-
-    return '\n'.join(return_data)
 
 
 def command_email(addr, *args):
@@ -294,7 +252,7 @@ def command_password_recovery(addr, *args):
             usr = user
 
     if usr is None:
-        return localize("PASSWORD_RECOVERY_NO_USER_IN_BD", addr, args=[username])
+        return localize("PASSWORD_RECOVERY_NO_USER_IN_DB", addr, args=[username])
 
     if not usr.email:
         return localize("PASSWORD_RECOVERY_NO_USER_EMAIL", addr, args=[username])
@@ -302,6 +260,280 @@ def command_password_recovery(addr, *args):
     return send_user_password(addr, usr)
 
 
+
+# ======== CONSOLE COMMANDS ========
+def command_help(addr, *args):
+    from Command.get_commands import get_all_commands
+
+    return_data = localize("HELP_HEADER", addr)
+
+    for command in get_all_commands():
+        description = localize(command[2], addr)
+        return_data += localize("HELP_FORMAT", addr, args=[command[0], command[1], description])
+
+    return return_data
+
+
+def command_debug(addr, *args):
+    from datetime import datetime
+    return_data = f"sender address \t {addr}\n"
+    return_data += f"server time \t {datetime.now()}\n"
+    return_data += f"user \t {find_user_by_ip(addr) if find_user_by_ip(addr) else 'user not found'}"
+
+    return return_data
+
+
+def command_clear(addr, *args):
+    return "!!clear"
+
+
+def command_lang(addr, *args):
+    all_langs = map(lambda x: x.lower(), get_all_langs())
+
+    if len(args) < 1:
+        return localize("LANG_NO_LANG", addr, args=[", ".join(all_langs)])
+    lang = args[0]
+
+    if lang not in all_langs:
+        return localize("LANG_INCORRECT", addr, args=[lang])
+
+    db_sess = db_session.create_session()
+    user = db_sess.query(__all_models.Users).filter_by(ip=addr).first()
+    user.lang = lang.upper()
+    db_sess.commit()
+
+    return localize("LANG_SUCCESS", addr, args=[lang])
+
+
+def command_status(addr, *args):
+    if len(args) < 1:
+        return localize("STATUS_NO_USER", addr)
+
+    username = args[0]
+
+    user_params = find_user_params_by_name(username)
+
+    if user_params is None:
+        return localize("STATUS_NO_USER_IN_BD", addr, args=[username])
+
+    return_data = []
+    for key, val in user_params.items():
+        return_data.append(f'{key}: {val}')
+
+    return '\n'.join(return_data)
+
+
+def command_wiki(addr, *args):
+    if len(args) == 0:
+        return localize("WIKI_HELP", addr)
+
+    if args[0] == "all":
+        return wiki_material(addr) + wiki_ammo(addr) + wiki_heal(addr) + \
+               wiki_armor(addr) + wiki_melee(addr) + wiki_range(addr)
+
+    if args[0] == "ammo":
+        return wiki_ammo(addr)
+    if args[0] == "armor":
+        return wiki_armor(addr)
+    if args[0] == "heal":
+        return wiki_heal(addr)
+    if args[0] == "material":
+        return wiki_ammo(addr)
+    if args[0] == "melee":
+        return wiki_melee(addr)
+    if args[0] == "range":
+        return wiki_range(addr)
+
+    return localize("WIKI_INCORRECT_CATEGORY", addr)
+
+
+def command_inv(addr, *args):
+    inventory = get_items_by_user(addr)
+
+
+    outputText = "======== INVENTORY ========\nname \t count \t durability (if has)\n"
+    for item in inventory:
+        outputText += f"{localize(item[3], addr)} \t {item[0]} \t {item[1] if item[1] != '-1' else ''}\n"
+
+    return outputText
+
+
+def command_sell(addr, *args):
+    if len(args) < 1:
+        return localize("SELL_NO_ITEM_PROVIDED", addr)
+
+    item_name = " ".join(args[0:len(args) - 1])
+
+    if len(args) > 1:
+        if args[-1].isnumeric():
+            count = int(args[-1])
+        else:
+            return localize("SELL_INVALID_COUNT", addr)
+    else:
+        count = 1
+
+    inventory = get_items_by_user(addr=addr)
+
+    for item in inventory:
+        if item_name == localize(item[3], addr).lower():
+            item[0] = -min(count, item[0])
+            add_item_by_ip(item, addr=addr)
+            edit_user_stats("money", 100, type="+", addr=addr) # Вот тут
+
+            return localize("SELL_SUCCESS", addr, args=[count, item_name])
+
+    return localize("SELL_NO_ITEM_FOUND", addr, args=[item_name])
+
+
+# ======== WIKI ========
+def wiki_ammo(addr):
+    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemAmmo).all()))
+    outputText = ""
+
+    # AMMO
+    outputText += "======== AMMO ========\n"
+    outputText += "name \t description \t price \n"
+    for item in items:
+        info = [localize(item.name, addr), localize(item.description, addr), item.price]
+        outputText += localize("WIKI_AMMO_FORMAT", addr, args=info) + "\n"
+
+    return outputText
+
+
+def wiki_armor(addr):
+    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemArmor).all()))
+    outputText = ""
+
+    # ARMOR
+    outputText += "======== ARMOR ========\n"
+    outputText += "name \t description \t price \t slot \t defence \n"
+    for item in items:
+        info = [localize(item.name, addr), localize(item.description, addr), item.price, item.slot, item.defence]
+        outputText += localize("WIKI_ARMOR_FORMAT", addr, args=info) + "\n"
+
+    return outputText
+
+
+def wiki_heal(addr):
+    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemHeal).all()))
+    outputText = ""
+
+    # HEAL
+    outputText += "======== HEAL ========\n"
+    outputText += "name \t description \t price \t heal amount \n"
+    for item in items:
+        info = [localize(item.name, addr), localize(item.description, addr), item.price, item.healAmount]
+        outputText += localize("WIKI_HEAL_FORMAT", addr, args=info) + "\n"
+
+    return outputText
+
+
+def wiki_material(addr):
+    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemMaterial).all()))
+    outputText = ""
+
+    # MATERIAL
+    outputText += "======== MATERIAL ========\n"
+    outputText += "name \t description \t price \n"
+    for item in items:
+        info = [localize(item.name, addr), localize(item.description, addr), item.price]
+        outputText += localize("WIKI_MATERIAL_FORMAT", addr, args=info) + "\n"
+
+    return outputText
+
+
+def wiki_melee(addr):
+    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemMeleeWeapon).all()))
+    outputText = ""
+
+    # MELEE
+    outputText += "======== MELEE WEAPON ========\n"
+    outputText += "name \t description \t price \t energy cost \t damage \t piercing \n"
+    for item in items:
+        info = [localize(item.name, addr), localize(item.description, addr), item.price,
+                item.energyCost, item.damage, item.piercing]
+        outputText += localize("WIKI_MELEE_FORMAT", addr, args=info) + "\n"
+
+    return outputText
+
+
+def wiki_range(addr):
+    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemRangeWeapon).all()))
+    outputText = ""
+
+    # RANGE
+    outputText += "======== RANGE WEAPON ========\n"
+    outputText += "name \t description \t price \t energy cost \t damage \t piercing \t ammo \t hit chance \n"
+    for item in items:
+        info = [localize(item.name, addr), localize(item.description, addr), item.price,
+                item.energyCost, item.damage, item.piercing, item.ammoType, item.hitChance]
+        outputText += localize("WIKI_RANGE_FORMAT", addr, args=info) + "\n"
+
+    return outputText
+
+
+# ======== Inventory ========
+def get_items_by_user(addr=None, username=""):
+    if addr:
+        username = find_user_by_ip(addr)
+    elif username == "":
+        return {"items": []}
+
+    inventory = db_session.create_session().query(__all_models.UsersParams).get(username)
+
+    if inventory is None:
+        # Params
+        user_params = __all_models.UsersParams()
+        user_params.name = username
+
+        # Dumping to DB
+        db_sess = db_session.create_session()
+
+        db_sess.add(user_params)
+        db_sess.commit()
+
+        return []
+
+    print(inventory, inventory.items)
+    return json.loads(inventory.items)["items"]
+
+def add_item_by_ip(item, addr="", username=""):
+    # Item
+    # [count, durability, table, name]
+
+    if addr != "":
+        username = find_user_by_ip(addr)
+    elif username == "":
+        return "No user provided"
+
+    db_sess = db_session.create_session()
+
+    # Getting params
+    if username not in list(map(lambda x: x.name, get_user_params())):
+        userParams = __all_models.UsersParams()
+    else:
+        userParams = db_sess.query(__all_models.UsersParams).get(username)
+
+    # Getting inventory
+    inventory = get_items_by_user(username=username)
+
+    # Check if item already in inventory
+    for index, invItem in enumerate(inventory):
+        if item[3] == invItem[3]:
+            if item[2] in ["itemMaterial", "itemAmmo", "itemHeal"]:  # Stackable items
+                invItem[0] += item[0]
+                if invItem[0] <= 0:
+                    inventory.pop(index)
+                else:
+                    inventory[index] = invItem
+            else:
+                inventory.append(item)
+
+            break
+
+    userParams.items = json.dumps({"items": inventory})
+
+    db_sess.commit()
 
 if __name__ == '__main__':
     pass

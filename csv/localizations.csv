@@ -1,0 +1,77 @@
+CODE;EN
+HELP_HEADER;name ~t syntax ~t description ~n
+HELP_FORMAT;{} ~t {} ~t {} ~n
+HELP_HELP;Prints help message equal to this
+HELP_DEBUG;Just a debug command for testers
+HELP_LOGIN;Used to login into account or create new one
+HELP_CLEAR;Clears all console outputs
+HELP_LANG;Changes current language. To get all languages use "lang"
+HELP_EMAIL;Adds mail to your account
+HELP_STATUS;Displays the player's status
+HELP_PASSWORD_RECOVERY;Send the password to the username email
+HELP_WIKI;Shows wiki about the game. To get more information use "wiki"
+HELP_INV;Shows your inventory
+HELP_SELL;Used for dropping items
+;
+;
+LOGIN_NO_NAME;No username provided
+LOGIN_NO_PASSWORD;No password provided
+LOGIN_INCORRECT_PASSWORD;The name "{}" is busy or the password is incorrect
+LOGIN_SUCCESS;You successfully logged to "{}"
+LOGIN_NEW_ACC_SUCCESS;You successfully created new account with name "{}". Don't lose your password!
+;
+LANG_NO_LANG;No language provided~nAll available languages: {}
+LANG_INCORRECT;Incorrect language "{}"~nView all languages using "lang"
+LANG_SUCCESS;Successfully changed account language to "{}"
+;
+STATUS_NO_USER;Expected username
+STATUS_NO_USER_IN_BD;The "{}" does not exist
+;
+EMAIL_NO_FOUND;Exepected email
+EMAIL_NO_LOGGED;You are not registered
+EMAIL_ADD_SUCCESS;Added email "{}" to user "{}"
+;
+PASSWORD_RECOVERY_NO_USERNAME;No username provided
+PASSWORD_RECOVERY_NO_USER_IN_DB;The "{}" does not exist
+PASSWORD_RECOVERY_NO_USER_EMAIL;The "{}" does not have mail
+PASSWORD_RECOVERY_SUCCESS_SEND_MAIL;Successfully sent email to "{}" email
+PASSWORD_RECOVERY_EMAIL_NOT_VALID;The recipient address <email> is not a valid RFC-5321 address.
+;
+WIKI_HELP;"Available arguments: all, ammo, armor, heal, material, melee, range"
+WIKI_INCORRECT_CATEGORY;Incorrect category. Use "wiki" to get all categories
+WIKI_AMMO_FORMAT;{} ~t {} ~t {} ~n
+WIKI_ARMOR_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~n
+WIKI_HEAL_FORMAT;{} ~t {} ~t {} ~t {} ~n
+WIKI_MATERIAL_FORMAT;{} ~t {} ~t {} ~n
+WIKI_MELEE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
+WIKI_RANGE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
+;
+SELL_NO_ITEM_PROVIDED;No item name provided
+SELL_INVALID_COUNT;Please re-enter count
+SELL_SUCCESS;Successfully sold {} of "{}"
+SELL_NO_ITEM_FOUND;Can't find "{}" in your inventory
+;
+;
+;
+ITEM_AMMO_DEBUG_NAME;Debug ammo
+ITEM_AMMO_DEBUG_DESC;Debug ammo desc
+;
+;
+ITEM_ARMOR_DEBUG_NAME;Debug armor
+ITEM_ARMOR_DEBUG_DESC;Debug armor desc
+;
+;
+ITEM_HEAL_DEBUG_NAME;Debug heal
+ITEM_HEAL_DEBUG_DESC;Debug heal desc
+;
+;
+ITEM_MATERIAL_DEBUG_NAME;Debug material
+ITEM_MATERIAL_DEBUG_DESC;Debug material desc
+;
+;
+ITEM_MELEE_WEAPON_DEBUG_NAME;Debug melee
+ITEM_MELEE_WEAPON_DEBUG_DESC;Debug melee desc
+;
+;
+ITEM_RANGE_WEAPON_DEBUG_NAME;Debug range
+ITEM_RANGE_WEAPON_DEBUG_DESC;Debug range desc
