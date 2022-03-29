@@ -7,7 +7,7 @@ HELP_LOGIN;Used to login into account or create new one
 HELP_CLEAR;Clears all console outputs
 HELP_LANG;Changes current language. To get all languages use "lang"
 HELP_EMAIL;Adds mail to your account
-HELP_STATUS;Displays the player's status
+HELP_STATUS;Displays the player's status. Use "self" as name to show your status
 HELP_PASSWORD_RECOVERY;Send the password to the username email
 HELP_WIKI;Shows wiki about the game. To get more information use "wiki"
 HELP_INV;Shows your inventory
@@ -19,6 +19,7 @@ LOGIN_NO_PASSWORD;No password provided
 LOGIN_INCORRECT_PASSWORD;The name "{}" is busy or the password is incorrect
 LOGIN_SUCCESS;You successfully logged to "{}"
 LOGIN_NEW_ACC_SUCCESS;You successfully created new account with name "{}". Don't lose your password!
+LOGIN_INCORRECT_NAME;"This name can't be used. Please, enter other name"
 ;
 LANG_NO_LANG;No language provided~nAll available languages: {}
 LANG_INCORRECT;Incorrect language "{}"~nView all languages using "lang"
@@ -48,7 +49,7 @@ WIKI_RANGE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
 ;
 SELL_NO_ITEM_PROVIDED;No item name provided
 SELL_INVALID_COUNT;Please re-enter count
-SELL_SUCCESS;Successfully sold {} of "{}"
+SELL_SUCCESS;Successfully sold {} "{}"(-s)
 SELL_NO_ITEM_FOUND;Can't find "{}" in your inventory
 ;
 ;

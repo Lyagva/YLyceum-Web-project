@@ -132,6 +132,9 @@ def command_login(addr, *args):
     else:
         return localize('LOGIN_NO_PASSWORD', addr)
 
+    if username in ["self"]:
+        return localize("LOGIN_INCORRECT_NAME", addr)
+
     for user in get_users():
         if user.login != username:
             continue
@@ -310,6 +313,8 @@ def command_status(addr, *args):
         return localize("STATUS_NO_USER", addr)
 
     username = args[0]
+    if username == "self":
+        username = find_user_by_ip(addr)
 
     user_params = find_user_params_by_name(username)
 
@@ -377,8 +382,13 @@ def command_sell(addr, *args):
     for item in inventory:
         if item_name == localize(item[3], addr).lower():
             item[0] = -min(count, item[0])
+
+
+            class_name = item[2][0].upper() + item[2][1:]
+            price = list(filter(lambda x: x.name == item[3],
+                                db_session.create_session().query(eval('__all_models.' + class_name))))[0].price
+            edit_user_stats("money", price, type="+", addr=addr)
             add_item_by_ip(item, addr=addr)
-            edit_user_stats("money", 100, type="+", addr=addr) # Вот тут
 
             return localize("SELL_SUCCESS", addr, args=[count, item_name])
 
