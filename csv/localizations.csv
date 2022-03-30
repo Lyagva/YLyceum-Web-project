@@ -49,7 +49,7 @@ WIKI_RANGE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
 ;
 SELL_NO_ITEM_PROVIDED;No item name provided
 SELL_INVALID_COUNT;Please re-enter count
-SELL_SUCCESS;Successfully sold {} "{}"(-s)
+SELL_SUCCESS;Successfully sold {} "{}"(-s) for {} money
 SELL_NO_ITEM_FOUND;Can't find "{}" in your inventory
 ;
 ;

@@ -381,16 +381,22 @@ def command_sell(addr, *args):
 
     for item in inventory:
         if item_name == localize(item[3], addr).lower():
-            item[0] = -min(count, item[0])
+            count = min(count, int(item[0]))
 
+            item[0] = -count
 
             class_name = item[2][0].upper() + item[2][1:]
             price = list(filter(lambda x: x.name == item[3],
                                 db_session.create_session().query(eval('__all_models.' + class_name))))[0].price
-            edit_user_stats("money", price, type="+", addr=addr)
-            add_item_by_ip(item, addr=addr)
 
-            return localize("SELL_SUCCESS", addr, args=[count, item_name])
+            print(price)
+            cost = price * count
+
+            edit_user_stats("money", cost, type="+", addr=addr)
+
+            add_item_by_ip(item, addr=addr)  # добавляем в инвентарь отрицательное количество предмета
+
+            return localize("SELL_SUCCESS", addr, args=[count, item_name, cost])
 
     return localize("SELL_NO_ITEM_FOUND", addr, args=[item_name])
 
