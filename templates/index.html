@@ -15,18 +15,35 @@
     <body class="bg-dark d-flex flex-column min-vh-100" style="white-space: pre-wrap;">
         <script>
             function addTextToConsole(text) {
-                var tag = document.createElement("p");
-                var text = document.createTextNode(text);
-                tag.appendChild(text);
-                var element = document.getElementById("console");
-                element.appendChild(tag);
+                var pTag = document.createElement("p");
+                var textNode = document.createTextNode(text);
+                pTag.appendChild(textNode);
+                var consoleObj = document.getElementById("console");
+                consoleObj.appendChild(pTag);
             }
-        </script>
 
-        <script>
-            function consoleClear() {
-                var consoleNode = document.getElementById("console");
-                consoleNode.innerHTML = "";
+            function clearFirstChild() {
+                var consoleObj = document.getElementById("console");
+                consoleObj.removeChild(consoleObj.firstChild);
+            }
+
+            function updateConsole(outputs) {
+                var consoleObj = document.getElementById("console");
+                if (outputs.length == 0) {
+                    consoleObj.innerHTML = '';
+                    return;
+                }
+
+                console.log(outputs.length, consoleObj.children.length);
+                if (outputs.length <= consoleObj.children.length) {
+                    return;
+                }
+
+                index = consoleObj.children.length;
+                for (_ = 0; index < outputs.length; index++) {
+                    console.log("Adding '" + outputs[index] + "' to console");
+                    addTextToConsole(outputs[index]);
+                }
             }
         </script>
 
@@ -47,17 +64,14 @@
 
                     // Функции обработчики
                     success: function(response) {
-                        var json = jQuery.parseJSON(response)
-                        message = json.outputText;
-                        messageArray = message.split("\n");
+                        var json = jQuery.parseJSON(response);
+                        outputs = json.outputs;
 
-                        if (messageArray[messageArray.length - 1] == "!!clear") {
-                            consoleClear();
-                            return;
+                        if (json.clearChild) {
+                            clearFirstChild()
                         }
 
-                        addTextToConsole(message);
-                        console.log(message);
+                        updateConsole(outputs);
                     },
 
                     error: function(error) {
@@ -65,6 +79,34 @@
                     }
                 });
             }
+
+            function updateData() { // Функция, вызываемая по кнопке
+                $.ajax({
+                    // Настройки
+                    type: "GET",
+                    url: "/sendData",
+
+                    // Функции обработчики
+                    success: function(response) {
+                        var json = jQuery.parseJSON(response);
+
+                        if (json.clearChild) {
+                            clearFirstChild()
+                        }
+
+                        updateConsole(json.outputs);
+                    },
+
+                    error: function(error) {
+                        console.log(error);
+                    },
+
+                    complete: function() {
+                        setTimeout(updateData, 500);
+                    }
+                });
+            }
+            setTimeout(updateData, 500);
         </script>
 
         <!-- Navbar
