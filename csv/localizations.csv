@@ -12,6 +12,7 @@ HELP_PASSWORD_RECOVERY;Send the password to the username email
 HELP_WIKI;Shows wiki about the game. To get more information use "wiki"
 HELP_INV;Shows your inventory
 HELP_SELL;Used for dropping items
+HELP_BUY;Used for acquire items
 ;
 ;
 LOGIN_NO_NAME;No username provided
@@ -51,6 +52,12 @@ SELL_NO_ITEM_PROVIDED;No item name provided
 SELL_INVALID_COUNT;Please re-enter count
 SELL_SUCCESS;Successfully sold {} "{}"(-s) for {} money
 SELL_NO_ITEM_FOUND;Can't find "{}" in your inventory
+;
+BUY_NO_ITEM_PROVIDED;No item name provided
+BUY_INVALID_COUNT;Please re-enter count
+BUY_NO_MONEY;You have no money
+BUY_SUSSESS;Successfully bought {} "{}"(-s) for {} money
+BUY_NO_ITEM_FOUND;Can't find "{}" in shops
 ;
 ;
 ;

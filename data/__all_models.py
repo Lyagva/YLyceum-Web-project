@@ -23,7 +23,7 @@ class UsersParams(SqlAlchemyBase):
     stats = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_stats))
 
     # [count, durability, table, itemName]
-    default_items = {"items": [[1, -1, "itemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
+    default_items = {"items": [[1, "ItemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
     items = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_items))
 
 

@@ -3,6 +3,8 @@ import json
 
 # ======== LOCALIZATION ========
 special_symbols = {"~n": "\n", "~t": "\t"}
+SELL_PRICE_DIVIDER = 1.2
+
 
 def localize(code, addr, args=[]):
     from csv import reader
@@ -93,6 +95,8 @@ def edit_user_stats(key, value, type="+", addr="", username=""):
 
     if type == "+":
         stats[key] += value
+    elif type == "-":
+        stats[key] -= value
     elif type == "*":
         stats[key] *= value
     elif type == "=":
@@ -263,7 +267,6 @@ def command_password_recovery(addr, *args):
     return send_user_password(addr, usr)
 
 
-
 # ======== CONSOLE COMMANDS ========
 def command_help(addr, *args):
     from Command.get_commands import get_all_commands
@@ -343,7 +346,7 @@ def command_wiki(addr, *args):
     if args[0] == "heal":
         return wiki_heal(addr)
     if args[0] == "material":
-        return wiki_ammo(addr)
+        return wiki_material(addr)
     if args[0] == "melee":
         return wiki_melee(addr)
     if args[0] == "range":
@@ -356,11 +359,58 @@ def command_inv(addr, *args):
     inventory = get_items_by_user(addr)
 
 
-    outputText = "======== INVENTORY ========\nname \t count \t durability (if has)\n"
+    outputText = "======== INVENTORY ========\nname \t count\n"
     for item in inventory:
-        outputText += f"{localize(item[3], addr)} \t {item[0]} \t {item[1] if item[1] != '-1' else ''}\n"
+        outputText += f"{localize(item[2], addr)} \t {item[0]}\n"
 
     return outputText
+
+
+def get_shop_items(addr):
+    return list(map(lambda category: {category: list(map(lambda item: item, db_session.create_session().query(eval('__all_models.' + category)).all()))}, ['ItemMaterial', 'ItemHeal', 'ItemArmor', 'ItemMeleeWeapon', 'ItemRangeWeapon', 'ItemAmmo']))
+
+
+#     =================== SHOP ===========================
+def command_buy(addr, *args):
+    if len(args) < 1:
+        return localize("BUY_NO_ITEM_PROVIDED", addr)
+
+    item_name = " ".join(args[:len(args) - 1])
+
+    if len(args) > 1:
+        if args[-1].isnumeric():
+            count = int(args[-1])
+        else:
+            return localize("BUY_INVALID_COUNT", addr)
+    else:
+        count = 1
+
+    lst = get_shop_items(addr)
+
+    for i in lst:
+        for category, items in i.items():
+            for item in items:
+                if item_name == localize(item.name, addr).lower():
+
+                    user_money = find_user_params_by_name(find_user_by_ip(addr))['money']
+
+                    if user_money < item.price:
+                        return localize("BUY_NO_MONEY", addr)
+
+                    while item.price * count > user_money:
+                        count -= 1
+
+                    cost = item.price * count
+
+                    edit_user_stats("money", cost, type="-", addr=addr)
+
+                    add_item = [count, category, vars(item)['name']]
+                    add_item_by_ip(add_item, addr)  # [1, 'itemMaterial', 'ITEM_MATERIAL_DEBUG_NAME']
+
+                    return localize("BUY_SUSSESS", addr, args=[count, item_name, cost])
+
+    return localize("BUY_NO_ITEM_FOUND", addr, args=[item_name])
+
 
 
 def command_sell(addr, *args):
@@ -380,17 +430,16 @@ def command_sell(addr, *args):
     inventory = get_items_by_user(addr=addr)
 
     for item in inventory:
-        if item_name == localize(item[3], addr).lower():
+        if item_name == localize(item[2], addr).lower():
             count = min(count, int(item[0]))
 
             item[0] = -count
 
-            class_name = item[2][0].upper() + item[2][1:]
-            price = list(filter(lambda x: x.name == item[3],
+            class_name = item[1][0].upper() + item[1][1:]
+            price = list(filter(lambda x: x.name == item[2],
                                 db_session.create_session().query(eval('__all_models.' + class_name))))[0].price
 
-            print(price)
-            cost = price * count
+            cost = int(price * count // SELL_PRICE_DIVIDER)
 
             edit_user_stats("money", cost, type="+", addr=addr)
 
@@ -408,9 +457,9 @@ def wiki_ammo(addr):
 
     # AMMO
     outputText += "======== AMMO ========\n"
-    outputText += "name \t description \t price \n"
+    outputText += "name \t description \t price buy/sell \n"
     for item in items:
-        info = [localize(item.name, addr), localize(item.description, addr), item.price]
+        info = [localize(item.name, addr), localize(item.description, addr), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}']
         outputText += localize("WIKI_AMMO_FORMAT", addr, args=info) + "\n"
 
     return outputText
@@ -422,9 +471,9 @@ def wiki_armor(addr):
 
     # ARMOR
     outputText += "======== ARMOR ========\n"
-    outputText += "name \t description \t price \t slot \t defence \n"
+    outputText += "name \t description \t price buy/sell \t slot \t defence \n"
     for item in items:
-        info = [localize(item.name, addr), localize(item.description, addr), item.price, item.slot, item.defence]
+        info = [localize(item.name, addr), localize(item.description, addr), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}', item.slot, item.defence]
         outputText += localize("WIKI_ARMOR_FORMAT", addr, args=info) + "\n"
 
     return outputText
@@ -436,9 +485,9 @@ def wiki_heal(addr):
 
     # HEAL
     outputText += "======== HEAL ========\n"
-    outputText += "name \t description \t price \t heal amount \n"
+    outputText += "name \t description \t price buy/sell \t heal amount \n"
     for item in items:
-        info = [localize(item.name, addr), localize(item.description, addr), item.price, item.healAmount]
+        info = [localize(item.name, addr), localize(item.description, addr), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}', item.healAmount]
         outputText += localize("WIKI_HEAL_FORMAT", addr, args=info) + "\n"
 
     return outputText
@@ -450,9 +499,9 @@ def wiki_material(addr):
 
     # MATERIAL
     outputText += "======== MATERIAL ========\n"
-    outputText += "name \t description \t price \n"
+    outputText += "name \t description \t price buy/sell \n"
     for item in items:
-        info = [localize(item.name, addr), localize(item.description, addr), item.price]
+        info = [localize(item.name, addr), localize(item.description, addr), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}']
         outputText += localize("WIKI_MATERIAL_FORMAT", addr, args=info) + "\n"
 
     return outputText
@@ -464,9 +513,9 @@ def wiki_melee(addr):
 
     # MELEE
     outputText += "======== MELEE WEAPON ========\n"
-    outputText += "name \t description \t price \t energy cost \t damage \t piercing \n"
+    outputText += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \n"
     for item in items:
-        info = [localize(item.name, addr), localize(item.description, addr), item.price,
+        info = [localize(item.name, addr), localize(item.description, addr), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
                 item.energyCost, item.damage, item.piercing]
         outputText += localize("WIKI_MELEE_FORMAT", addr, args=info) + "\n"
 
@@ -479,9 +528,9 @@ def wiki_range(addr):
 
     # RANGE
     outputText += "======== RANGE WEAPON ========\n"
-    outputText += "name \t description \t price \t energy cost \t damage \t piercing \t ammo \t hit chance \n"
+    outputText += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \t ammo \t hit chance \n"
     for item in items:
-        info = [localize(item.name, addr), localize(item.description, addr), item.price,
+        info = [localize(item.name, addr), localize(item.description, addr), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
                 item.energyCost, item.damage, item.piercing, item.ammoType, item.hitChance]
         outputText += localize("WIKI_RANGE_FORMAT", addr, args=info) + "\n"
 
@@ -513,6 +562,7 @@ def get_items_by_user(addr=None, username=""):
     print(inventory, inventory.items)
     return json.loads(inventory.items)["items"]
 
+
 def add_item_by_ip(item, addr="", username=""):
     # Item
     # [count, durability, table, name]
@@ -534,9 +584,11 @@ def add_item_by_ip(item, addr="", username=""):
     inventory = get_items_by_user(username=username)
 
     # Check if item already in inventory
+    print(inventory)
+    print(item)
     for index, invItem in enumerate(inventory):
-        if item[3] == invItem[3]:
-            if item[2] in ["itemMaterial", "itemAmmo", "itemHeal"]:  # Stackable items
+        if item[1] == invItem[1]:
+            if item[1] in ["ItemMaterial", "ItemAmmo", "ItemHeal"]:  # Stackable items
                 invItem[0] += item[0]
                 if invItem[0] <= 0:
                     inventory.pop(index)
@@ -545,11 +597,14 @@ def add_item_by_ip(item, addr="", username=""):
             else:
                 inventory.append(item)
 
-            break
+            userParams.items = json.dumps({"items": inventory})
+            db_sess.commit()
+            return
 
+    inventory.append(item)
     userParams.items = json.dumps({"items": inventory})
-
     db_sess.commit()
+
 
 if __name__ == '__main__':
     pass

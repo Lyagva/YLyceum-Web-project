@@ -11,7 +11,7 @@ def parse_command(addr, text):
             args = [f"'{arg}'" for arg in args]
             return eval(f"{db_command[3]}('{addr}', {', '.join(args)})")
 
-    return f"command \"{command}\" not found"
+    return f"command \"{command}\" not found use help"
 
 if __name__ == "__main__":
     print(parse_command(None, "help"))
