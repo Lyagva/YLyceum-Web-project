@@ -114,7 +114,7 @@
         <header>
             <nav class="nav nav-dark nav-tabs nav-fill nav-static-top bg-dark">
                 <a class="nav-link text-light" data-toggle="tab" href="/">Game</a>
-                <a class="nav-link text-light bg-dark active" data-toggle="tab" href="/chat">Chat</a>
+                <a class="nav-link text-light bg-dark active" data-toggle="tab" href="/chat/global">Chat</a>
                 <a class="nav-link text-light" data-toggle="tab" href="#TAB3">TAB 3</a>
             </nav>
         </header>
@@ -124,6 +124,12 @@
 
         </main>
 
+        <div style="position: fixed;padding-top: 70px;padding-left:10px;">
+            <a class="nav-link text-light" data-toggle="tab" href="global">global</a>
+            {% for friend in user_friends %}
+                <a class="nav-link text-light" data-toggle="tab" href={{friend}}> {{friend}} </a>
+            {% endfor %}
+        </div>
 
         <!-- Footer (ввод команды) -->
         <footer class="footer bg-dark" style="padding-top: 60px;">

@@ -59,6 +59,12 @@ def get_all_langs():
 
 
 # ======== LOGIN AND USERS ========
+def get_user_friends(addr):
+    for user in get_users():
+        if user.ip == addr and user.friends:
+            return eval(user.friends)
+    return []
+
 def get_users():
     return list(map(lambda user: user, db_session.create_session().query(__all_models.Users).all()))
 
@@ -71,6 +77,14 @@ def find_user_by_ip(addr):
     for user in get_users():
         if user.ip == addr:
             return user.login
+    return None
+
+
+def find_ip_by_user(name):
+    for user in get_users():
+        if user.login == name:
+            if user.ip:
+                return user.ip
     return None
 
 

@@ -1,5 +1,4 @@
 import os
-
 from flask import Flask, render_template, json, request
 import Logger
 from Command.parse_command import parse_command
@@ -9,7 +8,9 @@ app = Flask(__name__)
 log = Logger.set_logging()
 
 console_outputs = {}
-chat_outputs = []
+
+user_chats_opened = {}  # ip: name_of_chat
+user_chats_outputs = {'global': []}  # [name1, name2]: outputs
 
 
 @app.route("/")
@@ -17,28 +18,53 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/chat")
-def index2():
-    return render_template("index2.html")
+@app.route("/chat/<name>")
+def index2(name):
+    from Command.commands import get_user_friends
+
+    addr = request.remote_addr
+
+    user_friends = get_user_friends(addr)
+
+    if name not in ['global', *user_friends]:
+        render_template('404.html')
+
+    user_chats_opened[addr] = name
+
+    print(user_friends)
+
+    return render_template("index2.html", user_friends=user_friends)
 
 
 @app.route('/sendDataChat', methods=["GET", "POST"])
 def chat():
-    addr = request.remote_addr
-    if request.method == "POST":
-        from Command.commands import find_user_by_ip
+    from Command.commands import find_user_by_ip
 
+    addr = request.remote_addr
+    name_from = find_user_by_ip(addr)
+    name_to = user_chats_opened[addr]
+
+    if request.method == "POST":
         textIn = request.form["commandInput"]
         if textIn:
-            username = find_user_by_ip(addr)
-            if username is None:
-                username = 'NoName'
-            textOut = username + ':     ' + textIn
-            chat_outputs.append(textOut)
-    if request.method == "GET":
-        return json.dumps({'outputs': chat_outputs})
+            if name_to == 'global':
+                user_chats_outputs['global'].append(f'{name_from} >>>>>> {textIn}')
+            else:
+                if f'{name_from}-{name_to}' in user_chats_outputs.keys():
+                    user_chats_outputs[f'{name_from}-{name_to}'].append(f'{name_from} >>>>>> {textIn}')
+                else:
+                    user_chats_outputs[f'{name_from}-{name_to}'] = [f'{name_from} >>>>>> {textIn}']
 
-    return json.dumps({'outputs': chat_outputs})
+                if f'{name_to}-{name_from}' in user_chats_outputs.keys():
+                    user_chats_outputs[f'{name_to}-{name_from}'].append(f'{name_from} >>>>>> {textIn}')
+                else:
+                    user_chats_outputs[f'{name_to}-{name_from}'] = [f'{name_from} >>>>>> {textIn}']
+
+    if request.method == "GET":
+        if name_to == 'global':
+            return json.dumps({'outputs': user_chats_outputs['global']})
+        else:
+            return json.dumps({'outputs': user_chats_outputs[f'{name_from}-{name_to}']})
 
 
 @app.route("/sendData", methods=["GET", "POST"])
@@ -50,7 +76,6 @@ def post():
 
     if request.method == "GET":
         return json.dumps({"outputs": console_outputs[addr]})
-
 
     textIn = request.form["commandInput"]
 
@@ -68,16 +93,19 @@ def post():
         clear_child = True
         console_outputs[addr] = console_outputs[addr][1:]
 
-
     return json.dumps({"outputs": console_outputs[addr], "clearChild": clear_child})
 
 
 if __name__ == "__main__":
     db_session.global_init("db/main.db")
 
+    addr1 = [1, 2]  # ip отправитель получатель в базе с сообщениями
+    addr2 = [2, 1]  # ip отправитель получатель(имя пользователя найденное в бд с ip) на вход от клиента
+    print(addr1 == addr2 or addr1 == addr2[::-1])  # проверка на совпадение и дальнейший вывод в консоль из бд
     # LOCALHOST
     # app.run()
 
     # HEROKU
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
