@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, json, request
+from flask import Flask, render_template, json, request, redirect
 import Logger
 from Command.parse_command import parse_command
 from data import db_session
@@ -27,7 +27,7 @@ def index2(name):
     user_friends = get_user_friends(addr)
 
     if name not in ['global', *user_friends]:
-        render_template('404.html')
+        return render_template('404.html')
 
     user_chats_opened[addr] = name
 
@@ -42,7 +42,18 @@ def chat():
 
     addr = request.remote_addr
     name_from = find_user_by_ip(addr)
-    name_to = user_chats_opened[addr]
+
+    # Name To
+    name_to = "global"
+    try:
+        name_to = user_chats_opened[addr]
+    except KeyError:
+        redirect('global')
+
+    # Making cool name
+    if name_from is None:
+        name_from = f"Guest {'.'.join(addr.split('.')[:3])}.###"
+    name_from = f"[{name_from}]"
 
     if request.method == "POST":
         textIn = request.form["commandInput"]
@@ -99,13 +110,6 @@ def post():
 if __name__ == "__main__":
     db_session.global_init("db/main.db")
 
-    addr1 = [1, 2]  # ip отправитель получатель в базе с сообщениями
-    addr2 = [2, 1]  # ip отправитель получатель(имя пользователя найденное в бд с ip) на вход от клиента
-    print(addr1 == addr2 or addr1 == addr2[::-1])  # проверка на совпадение и дальнейший вывод в консоль из бд
-    # LOCALHOST
-    # app.run()
-
-    # HEROKU
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
 

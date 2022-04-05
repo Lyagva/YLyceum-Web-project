@@ -6,7 +6,10 @@ special_symbols = {"~n": "\n", "~t": "\t"}
 SELL_PRICE_DIVIDER = 1.2
 
 
-def localize(code, addr, args=[]):
+def localize(code, addr, args=None):
+    if args is None:
+        args = []
+
     from csv import reader
 
     args = list(map(str, args))
@@ -64,6 +67,7 @@ def get_user_friends(addr):
         if user.ip == addr and user.friends:
             return eval(user.friends)
     return []
+
 
 def get_users():
     return list(map(lambda user: user, db_session.create_session().query(__all_models.Users).all()))
@@ -618,6 +622,75 @@ def add_item_by_ip(item, addr="", username=""):
     inventory.append(item)
     userParams.items = json.dumps({"items": inventory})
     db_sess.commit()
+
+
+
+# ======== Chat ========
+def command_chat(addr, *args):
+    if len(args) == 0:
+        return localize("CHAT_NO_FUNC", addr=addr)
+    func = args[0]
+
+    if func not in ["add", "remove"]:
+        return localize("CHAT_INVALID_FUNC", addr=addr)
+
+    if len(args) <= 1:
+        return localize("CHAT_NO_NAME", addr=addr)
+    chatter_name = args[1]
+
+    print(func, chatter_name)
+
+
+    if func == "add":
+        if chatter_name not in list(map(lambda user: user.login, get_users())) or chatter_name == find_user_by_ip(addr):
+            return localize("CHAT_ADD_INVALID_NAME", addr=addr)
+
+        if chatter_name in get_user_friends(addr):
+            return localize("CHAT_ADD_ALREADY", addr=addr)
+
+        db_sess = db_session.create_session()
+
+
+
+        # APPENDING TO SENDER
+        user = db_sess.query(__all_models.Users).get(find_user_by_ip(addr))
+        friends = eval(user.friends)
+        friends.append(str(chatter_name))
+        user.friends = str(friends)
+
+        # APPENDING TO CHATTER
+        user = db_sess.query(__all_models.Users).get(chatter_name)
+        friends = eval(user.friends)
+        friends.append(str(find_user_by_ip(addr)))
+        user.friends = str(friends)
+
+        db_sess.commit()
+
+        return localize("CHAT_ADD_SUCCESS", addr=addr)
+
+
+
+    if chatter_name not in get_user_friends(addr):
+        return localize("CHAT_REMOVE_INVALID_NAME", addr=addr)
+
+
+    db_sess = db_session.create_session()
+
+    # REMOVING FROM SENDER
+    user = db_sess.query(__all_models.Users).get(find_user_by_ip(addr))
+    friends = get_user_friends(addr)
+    friends.remove(str(chatter_name))
+    user.friends = str(friends)
+
+    # REMOVING FROM CHATTER
+    user = db_sess.query(__all_models.Users).get(chatter_name)
+    friends = eval(user.friends)
+    friends.remove(str(find_user_by_ip(addr)))
+    user.friends = str(friends)
+
+    db_sess.commit()
+
+    return localize("CHAT_REMOVE_SUCCESS", addr=addr)
 
 
 if __name__ == '__main__':
