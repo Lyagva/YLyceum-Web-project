@@ -53,23 +53,22 @@ def chat():
     # Making cool name
     if name_from is None:
         name_from = f"Guest {'.'.join(addr.split('.')[:3])}.###"
-    name_from = f"[{name_from}]"
 
     if request.method == "POST":
         textIn = request.form["commandInput"]
         if textIn:
             if name_to == 'global':
-                user_chats_outputs['global'].append(f'{name_from} >>>>>> {textIn}')
+                user_chats_outputs['global'].append(f'[{name_from}] >>>>>> {textIn}')
             else:
                 if f'{name_from}-{name_to}' in user_chats_outputs.keys():
-                    user_chats_outputs[f'{name_from}-{name_to}'].append(f'{name_from} >>>>>> {textIn}')
+                    user_chats_outputs[f'{name_from}-{name_to}'].append(f'[{name_from}] >>>>>> {textIn}')
                 else:
-                    user_chats_outputs[f'{name_from}-{name_to}'] = [f'{name_from} >>>>>> {textIn}']
+                    user_chats_outputs[f'{name_from}-{name_to}'] = [f'[{name_from}] >>>>>> {textIn}']
 
                 if f'{name_to}-{name_from}' in user_chats_outputs.keys():
-                    user_chats_outputs[f'{name_to}-{name_from}'].append(f'{name_from} >>>>>> {textIn}')
+                    user_chats_outputs[f'{name_to}-{name_from}'].append(f'[{name_from}] >>>>>> {textIn}')
                 else:
-                    user_chats_outputs[f'{name_to}-{name_from}'] = [f'{name_from} >>>>>> {textIn}']
+                    user_chats_outputs[f'{name_to}-{name_from}'] = [f'[{name_from}] >>>>>> {textIn}']
 
     if request.method == "GET":
         if name_to == 'global':
