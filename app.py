@@ -4,13 +4,14 @@ import Logger
 from Command.parse_command import parse_command
 from data import db_session
 
+
 app = Flask(__name__)
 log = Logger.set_logging()
 
 console_outputs = {}
 
 user_chats_opened = {}  # ip: name_of_chat
-user_chats_outputs = {'global': []}  # [name1, name2]: outputs
+user_chats_outputs = {'global': []}  # [name1, name2]: [outputs]
 
 
 @app.route("/")
@@ -27,7 +28,7 @@ def index2(name):
     user_friends = get_user_friends(addr)
 
     if name not in ['global', *user_friends]:
-        return render_template('404.html')
+        return redirect("/404")
 
     user_chats_opened[addr] = name
 
@@ -106,9 +107,13 @@ def post():
     return json.dumps({"outputs": console_outputs[addr], "clearChild": clear_child})
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
 if __name__ == "__main__":
     db_session.global_init("db/main.db")
 
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
