@@ -1,3 +1,5 @@
-Flask
+Flask~=2.0.3
 Flask-SQLAlchemy
 cryptography
+SQLAlchemy~=1.4.32
+Werkzeug~=2.0.3

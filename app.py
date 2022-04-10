@@ -128,6 +128,11 @@ def post():
     return json.dumps({"outputs": console_outputs[addr], "clearChild": clear_child})
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
 if __name__ == "__main__":
     log.info("Opening db/main.db")
     db_session.global_init("db/main.db")
@@ -135,4 +140,3 @@ if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-

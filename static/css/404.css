@@ -1,0 +1,23 @@
+body {
+    background-color: #000000;
+}
+
+.all_canvas {
+    width: 40%;
+    height: 50%;
+}
+
+.c1 {
+    width: 25%;
+}
+
+.c2 {
+    width: 25%;
+}
+
+.c3 {
+    width: 25%;
+}
+.c4 {
+    width: 100%;
+}
