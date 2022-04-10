@@ -2,7 +2,7 @@ import Logger
 from data import __all_models, db_session
 import json
 
-log = Logger.set_logging()
+log = None
 
 # ======== COMMANDS GLOBAL FUNCS ========
 def get_all_commands():
@@ -18,10 +18,9 @@ def get_all_commands():
 
 def process_command(addr, text):
     # Importing LOG from app.py
-    from app import log
-    logger = log
+    import app
     global log
-    log = logger
+    log = app.log
 
 
     all_commands = get_all_commands()
