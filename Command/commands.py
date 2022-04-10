@@ -2,14 +2,14 @@ import Logger
 from data import __all_models, db_session
 import json
 
-log = None
+log = Logger.set_logging()
 
 # ======== COMMANDS GLOBAL FUNCS ========
 def get_all_commands():
     from app import log
     command_list = []
 
-    # log.debug("Opening db session for GETTING ALL COMMANDS")
+    log.debug("Opening db session for GETTING ALL COMMANDS")
     db_sess = db_session.create_session()
     for value in db_sess.query(__all_models.Commands).all():
         command_list.append((value.name, value.syntax, value.description, value.python_func))
@@ -28,13 +28,13 @@ def process_command(addr, text):
 
     for db_command in all_commands:
         if command == db_command[0]:
-            # log.debug(f"Fount command {command} in all commands list")
+            log.debug(f"Fount command {command} in all commands list")
             args = [f"'{arg}'" for arg in args]
 
-            # log.debug(f"Executing {command} for {addr}")
+            log.debug(f"Executing {command} for {addr}")
             return eval(f"{db_command[3]}('{addr}', {', '.join(args)})")
 
-    # log.debug(f"Can't find {command} for {addr}")
+    log.debug(f"Can't find {command} for {addr}")
     return f"command \"{command}\" not found. Use help to get all commands"
 
 
@@ -56,13 +56,13 @@ def localize(code, addr, args=None):
     if username is not None:
         for user in get_users():
             if user.login == username:
-                # log.debug(f"Setting lang to {user.lang}")
+                log.debug(f"Setting lang to {user.lang}")
                 lang = user.lang
 
 
 
     # Reading csv file
-    # log.debug("Opening and reading loc file")
+    log.debug("Opening and reading loc file")
     with open('csv/localizations.csv', encoding="utf8") as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
         data = list(map(lambda x: x, reader)) # Storing data to list
@@ -74,29 +74,29 @@ def localize(code, addr, args=None):
 
     for line in phrases: # going through all lines
         if code == line[0]: # check if line.code == code
-            # log.debug(f"Found {code} in loc.csv")
+            log.debug(f"Found {code} in loc.csv")
 
             output = str(line[keys[lang]]) # setting output
 
-            # log.debug(f"Replacing special symbols for {output}")
+            log.debug(f"Replacing special symbols for {output}")
             for key in special_symbols.keys():
                 output = output.replace(key, special_symbols[key])
 
-            # log.debug(f"Placing {args} to line")
+            log.debug(f"Placing {args} to line")
             for i in range(min(output.count("{}"), len(args))):
                 output = output.replace("{}", args[i], 1)
 
-            # log.debug(f"Returning {output} phrase")
+            log.debug(f"Returning {output} phrase")
             return output
 
-    # log.debug(f"Loc code {code} not found")
+    log.debug(f"Loc code {code} not found")
     return code
 
 
 def get_all_langs():
     from csv import reader
 
-    # log.debug("Opening and reading localizations file")
+    log.debug("Opening and reading localizations file")
     with open('csv/localizations.csv', encoding="utf8") as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
         data = list(map(lambda x: x, reader)) # Storing data to list
@@ -105,7 +105,7 @@ def get_all_langs():
     for value in data[0][1:]:
         keys.append(str(value))
 
-    # log.debug(f"Returning all langs: {keys}")
+    log.debug(f"Returning all langs: {keys}")
     return keys
 
 
@@ -113,37 +113,37 @@ def get_all_langs():
 def get_user_friends(addr):
     user = get_user_by_ip(addr)
     if user and user.friends:
-        # log.debug(f"Found friends for {user}, {addr}. Friends: {eval(user.friends)}")
+        log.debug(f"Found friends for {user}, {addr}. Friends: {eval(user.friends)}")
         return eval(user.friends)
 
     return []
 
 
 def get_users():
-    # log.debug("(One action) Getting all users. Accessing main.db . Returning all users")
+    log.debug("(One action) Getting all users. Accessing main.db . Returning all users")
     return list(map(lambda user: user, db_session.create_session().query(__all_models.Users).all()))
 
 
 def get_all_users_params():
-    # log.debug("(One action) Getting all user params. Accessing main.db . Returning all user params")
+    log.debug("(One action) Getting all user params. Accessing main.db . Returning all user params")
     return list(map(lambda user_p: user_p, db_session.create_session().query(__all_models.UsersParams).all()))
 
 
 def get_user_by_ip(addr):
-    # log.debug("Getting all users")
+    log.debug("Getting all users")
     for user in get_users():
         if user.ip == addr:
-            # log.debug(f"User {user.login} found by {addr}")
+            log.debug(f"User {user.login} found by {addr}")
             return user.login
     return None
 
 
 def get_ip_by_user(name):
-    # log.debug("Getting all users")
+    log.debug("Getting all users")
     for user in get_users():
         if user.login == name:
             if user.ip:
-                # log.debug(f"User {user.login} found by {addr}")
+                log.debug(f"User {user.login} found by {name}")
                 return user.ip
     return None
 
@@ -152,17 +152,17 @@ def get_user_params(addr="", username=""):
     if addr:
         username = get_user_by_ip(addr)
     elif username is None:
-        # log.debug(f"Can't find user {username}, {addr}")
+        log.debug(f"Can't find user {username}, {addr}")
         return None
 
-    # log.debug(f"Getting {username} params")
+    log.debug(f"Getting {username} params")
     for user_p in get_all_users_params():
         if user_p.name == username:
-            # log.debug(f"Params for {username} found")
+            log.debug(f"Params for {username} found")
 
             return json.loads(user_p.stats)
 
-    # log.debug(f"Can't find params for user {username}")
+    log.debug(f"Can't find params for user {username}")
     return None
 
 
@@ -172,14 +172,14 @@ def edit_user_stats(key, value, type="+", addr="", username=""):
     if addr:
         username = get_user_by_ip(addr)
     elif username is None:
-        # log.debug(f"Can't find user {username}, {addr}")
+        log.debug(f"Can't find user {username}, {addr}")
         return
 
-    # log.debug(f"Getting user params for {username}")
+    log.debug(f"Getting user params for {username}")
     stats = get_user_params(username=username)
 
 
-    # log.debug(f"Applying '{type}{value}' operation for {key} param for {username}, {addr}")
+    log.debug(f"Applying '{type}{value}' operation for {key} param for {username}, {addr}")
     if type == "+":
         stats[key] += value
     elif type == "-":
@@ -190,32 +190,32 @@ def edit_user_stats(key, value, type="+", addr="", username=""):
         stats[key] = value
 
 
-    # log.debug("Opening main.db session")
+    log.debug("Opening main.db session")
     db_sess = db_session.create_session()
 
-    # log.debug(f"Getting user params by name {username}, {addr}")
+    log.debug(f"Getting user params by name {username}, {addr}")
     user_params = db_sess.query(__all_models.UsersParams).get(username)
-    # log.debug(f"Editing {username}, {addr} params to '{stats}'")
+    log.debug(f"Editing {username}, {addr} params to '{stats}'")
     user_params.stats = json.dumps(stats)
 
-    # log.debug(f"Appending data to main.db for user {username}, {addr}")
+    log.debug(f"Appending data to main.db for user {username}, {addr}")
     db_sess.add(user_params)
-    # log.debug("Closing main.db")
+    log.debug("Closing main.db")
     db_sess.commit()
 
 
 def clear_old_data_ip(addr):
-    # log.debug("Opening main.db session")
+    log.debug("Opening main.db session")
     db_sess = db_session.create_session()
 
     username = get_user_by_ip(addr)
     if username:
-        # log.debug(f"Opening main.db to get {username}, {addr} user data")
+        log.debug(f"Opening main.db to get {username}, {addr} user data")
         prev_user = db_sess.query(__all_models.Users).get(username)
-        # log.debug("Clearing data for {username}, {addr}")
+        log.debug("Clearing data for {username}, {addr}")
         prev_user.ip = None
 
-    # log.debug("Closing main.db")
+    log.debug("Closing main.db")
     db_sess.commit()
 
 
@@ -227,7 +227,7 @@ def send_user_password(addr, user):
     from dotenv import load_dotenv
     from cryptography.fernet import Fernet
 
-    # log.debug(f"Recovering password for {addr}")
+    log.debug(f"Recovering password for {addr}")
 
     message = f'''
     Hello. 
@@ -266,7 +266,7 @@ def send_user_password(addr, user):
 
 
 def command_password_recovery(addr, *args):
-    # log.debug(f"[Command password recovery {addr}] Executing")
+    log.debug(f"[Command password recovery {addr}] Executing")
 
     if len(args) < 1:
         log.debug(f"[Password Recovery {addr}] No username provided")
@@ -280,36 +280,36 @@ def command_password_recovery(addr, *args):
             user = usr
 
     if user is None:
-        # log.debug(f"[Password Recovery {addr}] Can't find user")
+        log.debug(f"[Password Recovery {addr}] Can't find user")
         return localize("PASSWORD_RECOVERY_NO_USER_IN_DB", addr, args=[username])
 
     if not user.email:
-        # log.debug(f"[Password Recovery {addr}] No email for {username} user")
+        log.debug(f"[Password Recovery {addr}] No email for {username} user")
         return localize("PASSWORD_RECOVERY_NO_USER_EMAIL", addr, args=[username])
 
-    # log.debug(f"[Password Recovery {addr}] Sending email with {username} user")
+    log.debug(f"[Password Recovery {addr}] Sending email with {username} user")
     return send_user_password(addr, user)
 
 
 # ======== CONSOLE COMMANDS ========
 def command_help(addr, *args):
-    # log.debug(f"[Command help {addr}] Executing")
+    log.debug(f"[Command help {addr}] Executing")
 
     return_data = localize("HELP_HEADER", addr)
 
-    # log.debug(f"[Command help {addr}] Getting all commands")
+    log.debug(f"[Command help {addr}] Getting all commands")
     for command in get_all_commands():
         description = localize(command[2], addr)
         return_data += localize("HELP_FORMAT", addr, args=[command[0], command[1], description])
 
-    # log.debug(f"[Command help {addr}] Returning data")
+    log.debug(f"[Command help {addr}] Returning data")
     return return_data
 
 
 def command_debug(addr, *args):
     from datetime import datetime
 
-    # log.debug(f"[Command debug {addr}] Executing")
+    log.debug(f"[Command debug {addr}] Executing")
 
     return_data = f"sender address \t {addr}\n"
     return_data += f"server time \t {datetime.now()}\n"
@@ -319,76 +319,76 @@ def command_debug(addr, *args):
 
 
 def command_clear(addr, *args):
-    # log.debug(f"[Command clear {addr}] Executing")
+    log.debug(f"[Command clear {addr}] Executing")
 
     return "!!clear"
 
 
 def command_lang(addr, *args):
-    # log.debug(f"[Command lang {addr}] Executing")
+    log.debug(f"[Command lang {addr}] Executing")
 
     all_langs = map(lambda x: x.lower(), get_all_langs())
 
     if len(args) < 1:
-        # log.debug(f"[Command lang {addr}] No lang provided")
+        log.debug(f"[Command lang {addr}] No lang provided")
         return localize("LANG_NO_LANG", addr, args=[", ".join(all_langs)])
     lang = args[0]
 
     if lang not in all_langs:
-        # log.debug(f"[Command lang {addr}] Can't find '{lang}' lang")
+        log.debug(f"[Command lang {addr}] Can't find '{lang}' lang")
         return localize("LANG_INCORRECT", addr, args=[lang])
 
-    # log.debug(f"[Command lang {addr}] Opening main.db")
+    log.debug(f"[Command lang {addr}] Opening main.db")
     db_sess = db_session.create_session()
-    # log.debug(f"[Command lang {addr}] Getting user")
+    log.debug(f"[Command lang {addr}] Getting user")
     user = db_sess.query(__all_models.Users).filter_by(ip=addr).first()
-    # log.debug(f"[Command lang {addr}] Setting lang")
+    log.debug(f"[Command lang {addr}] Setting lang")
     user.lang = lang.upper()
-    # log.debug(f"[Command lang {addr}] Commiting to main.db")
+    log.debug(f"[Command lang {addr}] Commiting to main.db")
     db_sess.commit()
 
     return localize("LANG_SUCCESS", addr, args=[lang])
 
 
 def command_status(addr, *args):
-    # log.debug(f"[Command status {addr}] Executing")
+    log.debug(f"[Command status {addr}] Executing")
     if len(args) < 1:
-        # log.debug(f"[Command status {addr}] No username provided")
+        log.debug(f"[Command status {addr}] No username provided")
         return localize("STATUS_NO_USER", addr)
 
     username = args[0]
     if username == "self":
         username = get_user_by_ip(addr)
 
-    # log.debug(f"[Command status {addr}] Getting params for {username}")
+    log.debug(f"[Command status {addr}] Getting params for {username}")
     user_params = get_user_params(username)
 
     if user_params is None:
-        # log.debug(f"[Command status {addr}] Cant find {username} user in params table")
+        log.debug(f"[Command status {addr}] Cant find {username} user in params table")
         return localize("STATUS_NO_USER_IN_BD", addr, args=[username])
 
     return_data = []
     for key, val in user_params.items():
         return_data.append(f'{key}: {val}')
 
-    # log.debug(f"[Command status {addr}] Returning user params")
+    log.debug(f"[Command status {addr}] Returning user params")
     return '\n'.join(return_data)
 
 
 def command_wiki(addr, *args):
-    # log.debug(f"[Command wiki {addr}] Executing")
+    log.debug(f"[Command wiki {addr}] Executing")
     if len(args) == 0:
-        # log.debug(f"[Command wiki {addr}] No argument provided")
+        log.debug(f"[Command wiki {addr}] No argument provided")
         return localize("WIKI_HELP", addr)
 
     category = args[0]
 
     if category == "all":
-        # log.debug(f"[Command wiki {addr}] Requesting all wikis")
+        log.debug(f"[Command wiki {addr}] Requesting all wikis")
         return wiki_material(addr) + wiki_ammo(addr) + wiki_heal(addr) + \
                wiki_armor(addr) + wiki_melee(addr) + wiki_range(addr)
 
-    # log.debug(f"[Command wiki {addr}] Requesting {category} wiki")
+    log.debug(f"[Command wiki {addr}] Requesting {category} wiki")
     if category == "ammo":
         return wiki_ammo(addr)
     if category == "armor":
@@ -402,14 +402,14 @@ def command_wiki(addr, *args):
     if category == "range":
         return wiki_range(addr)
 
-    # log.debug(f"[Command wiki {addr}] Can't find {category} category")
+    log.debug(f"[Command wiki {addr}] Can't find {category} category")
     return localize("WIKI_INCORRECT_CATEGORY", addr)
 
 
 def command_inv(addr, *args):
-    # log.debug(f"[Command inv {addr}] Executing")
+    log.debug(f"[Command inv {addr}] Executing")
 
-    # log.debug(f"[Command inv {addr}] Requesting inventory")
+    log.debug(f"[Command inv {addr}] Requesting inventory")
     inventory = get_items_by_user(addr)
 
 
@@ -417,25 +417,25 @@ def command_inv(addr, *args):
     for item in inventory:
         outputText += f"{localize(item[2], addr)} \t {item[0]}\n"
 
-    # log.debug(f"[Command inv {addr}] Returning items")
+    log.debug(f"[Command inv {addr}] Returning items")
     return outputText
 
 
 def command_login(addr, *args):
     from cryptography.fernet import Fernet
 
-    # log.debug(f"[Command login {addr}] Executing")
+    log.debug(f"[Command login {addr}] Executing")
 
     if len(args) >= 1:
         username = args[0]
     else:
-        # log.debug(f"[Command login {addr}] No username provided")
+        log.debug(f"[Command login {addr}] No username provided")
         return localize('LOGIN_NO_NAME', addr)
 
     if len(args) >= 2:
         password = args[1]
     else:
-        # log.debug(f"[Command login {addr}] No password provided")
+        log.debug(f"[Command login {addr}] No password provided")
         return localize('LOGIN_NO_PASSWORD', addr)
 
     if username in ["self"]:
@@ -446,7 +446,7 @@ def command_login(addr, *args):
             continue
 
         if Fernet(user.key_code_password).decrypt(user.password).decode('utf-8') != password:
-            # log.debug(f"[Command login {addr}] Incorrect password {password}")
+            log.debug(f"[Command login {addr}] Incorrect password {password}")
             return localize('LOGIN_INCORRECT_PASSWORD', addr, args=[username])
         else:
             log.debug(f"[Command login {addr}] Clearing old ip")
