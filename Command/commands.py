@@ -28,7 +28,7 @@ def process_command(addr, text):
 
     for db_command in all_commands:
         if command == db_command[0]:
-            log.debug(f"Fount command {command} in all commands list")
+            log.debug(f"found command {command} in all commands list")
             args = [f"'{arg}'" for arg in args]
 
             log.debug(f"Executing {command} for {addr}")
