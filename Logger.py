@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 
 
-def set_logging():
+def set_logger():
     """
     Функция, создающая и возвращающая логгер. Логгер - объект, нужный для вывода и записи данных в консоль/файл.
     Все сетевые выводы кроме выводов из разряда: "А какой тип данных оно выводит?", рекомендую делать через логи.
@@ -39,7 +39,7 @@ def set_logging():
     time = datetime.now().strftime("%d-%m-%y--%H-%M-%S") #  Формат времени в имени файла
 
     logger = logging.getLogger() #  Создание главного логгера
-    logger.setLevel("INFO")
+    logger.setLevel("DEBUG")
 
     fileHandler = logging.FileHandler(filename=f"logs/log{time}.log") #  Логгера для файлов + указание имени файла
     fileHandler.setFormatter(formatter) #  Изменение формата записи в файл

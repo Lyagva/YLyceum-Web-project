@@ -1,8 +1,8 @@
-import Logger
+import logging
 from data import __all_models, db_session
 import json
 
-log = Logger.set_logging()
+log = logging.getLogger()
 
 # ======== COMMANDS GLOBAL FUNCS ========
 def get_all_commands():
@@ -56,13 +56,13 @@ def localize(code, addr, args=None):
     if username is not None:
         for user in get_users():
             if user.login == username:
-                log.debug(f"Setting lang to {user.lang}")
+                # log.debug(f"Setting lang to {user.lang}")
                 lang = user.lang
 
 
 
     # Reading csv file
-    log.debug("Opening and reading loc file")
+    # log.debug("Opening and reading loc file")
     with open('csv/localizations.csv', encoding="utf8") as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
         data = list(map(lambda x: x, reader)) # Storing data to list
@@ -74,29 +74,29 @@ def localize(code, addr, args=None):
 
     for line in phrases: # going through all lines
         if code == line[0]: # check if line.code == code
-            log.debug(f"Found {code} in loc.csv")
+            # log.debug(f"Found {code} in loc.csv")
 
             output = str(line[keys[lang]]) # setting output
 
-            log.debug(f"Replacing special symbols for {output}")
+            # log.debug(f"Replacing special symbols for {output}")
             for key in special_symbols.keys():
                 output = output.replace(key, special_symbols[key])
 
-            log.debug(f"Placing {args} to line")
+            # log.debug(f"Placing {args} to line")
             for i in range(min(output.count("{}"), len(args))):
                 output = output.replace("{}", args[i], 1)
 
-            log.debug(f"Returning {output} phrase")
+            # log.debug(f"Returning {output} phrase")
             return output
 
-    log.debug(f"Loc code {code} not found")
+    # log.debug(f"Loc code {code} not found")
     return code
 
 
 def get_all_langs():
     from csv import reader
 
-    log.debug("Opening and reading localizations file")
+    # log.debug("Opening and reading localizations file")
     with open('csv/localizations.csv', encoding="utf8") as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
         data = list(map(lambda x: x, reader)) # Storing data to list
@@ -105,15 +105,22 @@ def get_all_langs():
     for value in data[0][1:]:
         keys.append(str(value))
 
-    log.debug(f"Returning all langs: {keys}")
+    # log.debug(f"Returning all langs: {keys}")
     return keys
 
 
 # ======== LOGIN AND USERS ========
 def get_user_friends(addr):
-    user = get_user_by_ip(addr)
+    username = get_user_by_ip(addr)
+    user = None
+
+    for usr in get_users():
+        if usr.login == username:
+            user = usr
+            break
+
     if user and user.friends:
-        log.debug(f"Found friends for {user}, {addr}. Friends: {eval(user.friends)}")
+        log.debug(f"Found friends for {user.login}, {addr}. Friends: {eval(user.friends)}")
         return eval(user.friends)
 
     return []
