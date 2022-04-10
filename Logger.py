@@ -35,7 +35,7 @@ def set_logging():
     if not os.path.exists(os.path.abspath("./logs")): #  Проверяем есть ли директория для логов
         os.makedirs("./logs") #  Создаём директорию для логов
 
-    formatter = logging.Formatter('%(levelname)s - %(asctime)s >>> %(message)s') #  Формат сообщения в логах
+    formatter = logging.Formatter('%(levelname)s - %(asctime)s - line %(lineno)d >>> %(message)s') #  Формат сообщения в логах
     time = datetime.now().strftime("%d-%m-%y--%H-%M-%S") #  Формат времени в имени файла
 
     logger = logging.getLogger() #  Создание главного логгера

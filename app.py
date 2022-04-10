@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, json, request, redirect
 import Logger
-from Command.parse_command import parse_command
+from Command.commands import *
 from data import db_session
 
 app = Flask(__name__)
@@ -10,11 +10,12 @@ log = Logger.set_logging()
 console_outputs = {}
 
 user_chats_opened = {}  # ip: name_of_chat
-user_chats_outputs = {'global': []}  # [name1, name2]: outputs
+user_chats_outputs = {"global": []}  # [name1, name2]: outputs
 
 
 @app.route("/")
 def index():
+    # log.debug("Returning INDEX template for" + request.remote_addr)
     return render_template("index.html")
 
 
@@ -24,57 +25,71 @@ def index2(name):
 
     addr = request.remote_addr
 
+    # log.debug("Trying to get friends for", addr)
     user_friends = get_user_friends(addr)
 
-    if name not in ['global', *user_friends]:
-        return render_template('404.html')
+    if name not in ["global", *user_friends]:
+        # log.debug("Returning 404 template for" + addr)
+        return render_template("404.html")
 
+    # log.debug(f"Adding {addr} chat with name {name}")
     user_chats_opened[addr] = name
 
-    print(user_friends)
-
+    # log.debug("Returning INDEX2 template for" + addr)
     return render_template("index2.html", user_friends=user_friends)
 
 
-@app.route('/sendDataChat', methods=["GET", "POST"])
+@app.route("/sendDataChat", methods=["GET", "POST"])
 def chat():
-    from Command.commands import find_user_by_ip
+    from Command.commands import get_user_by_ip
 
     addr = request.remote_addr
-    name_from = find_user_by_ip(addr)
+    name_from = get_user_by_ip(addr)
 
     # Name To
     name_to = "global"
     try:
+        # log.debug(f"Trying to get chat by {addr}")
         name_to = user_chats_opened[addr]
     except KeyError:
-        redirect('global')
+        redirect("global")
 
     # Making cool name
     if name_from is None:
+        # log.debug("Making cool name for guest")
         name_from = f"Guest {'.'.join(addr.split('.')[:3])}.###"
 
     if request.method == "POST":
         textIn = request.form["commandInput"]
         if textIn:
-            if name_to == 'global':
-                user_chats_outputs['global'].append(f'[{name_from}] >>>>>> {textIn}')
+            if name_to == "global":
+                # log.debug(f"Appending message to {name_to} chat with text {textIn}")
+                user_chats_outputs["global"].append(f"[{name_from}] >>>>>> {textIn}")
             else:
-                if f'{name_from}-{name_to}' in user_chats_outputs.keys():
-                    user_chats_outputs[f'{name_from}-{name_to}'].append(f'[{name_from}] >>>>>> {textIn}')
-                else:
-                    user_chats_outputs[f'{name_from}-{name_to}'] = [f'[{name_from}] >>>>>> {textIn}']
+                chat_name_from = f"{name_from}-{name_to}"
+                if chat_name_from not in user_chats_outputs.keys():
+                    # log.debug(f"Creating chat {name_to}")
+                    user_chats_outputs[chat_name_from] = []
 
-                if f'{name_to}-{name_from}' in user_chats_outputs.keys():
-                    user_chats_outputs[f'{name_to}-{name_from}'].append(f'[{name_from}] >>>>>> {textIn}')
-                else:
-                    user_chats_outputs[f'{name_to}-{name_from}'] = [f'[{name_from}] >>>>>> {textIn}']
+                # log.debug(f"Appending message to {chat_name_from} chat with text {textIn}")
+                user_chats_outputs[chat_name_from].append(f"[{name_from}] >>>>>> {textIn}")
+
+                chat_name_to = f"{name_to}-{name_from}"
+                if chat_name_to not in user_chats_outputs.keys():
+                    # log.debug(f"Creating chat {chat_name_to}")
+                    user_chats_outputs[chat_name_to] = []
+
+                # log.debug(f"Appending message to {chat_name_to} chat with text {textIn}")
+                user_chats_outputs[chat_name_to].append(f"[{name_from}] >>>>>> {textIn}")
+
 
     if request.method == "GET":
-        if name_to == 'global':
-            return json.dumps({'outputs': user_chats_outputs['global']})
-        else:
-            return json.dumps({'outputs': user_chats_outputs[f'{name_from}-{name_to}']})
+        chat_name_from = f"{name_from}-{name_to}"
+        if name_to == "global":
+            chat_name_from = name_to
+
+        # log.debug(f"Returning {name_from} chat data")
+        return json.dumps({"outputs": user_chats_outputs[chat_name_from]})
 
 
 @app.route("/sendData", methods=["GET", "POST"])
@@ -85,30 +100,39 @@ def post():
         console_outputs[addr] = []
 
     if request.method == "GET":
-        return json.dumps({"outputs": console_outputs[addr]})
+        # log.debug(f"Returning console outputs for {addr}")
+        return json.dumps({"outputs": console_outputs[addr], "clearChild": False})
 
     textIn = request.form["commandInput"]
 
     if len(textIn) == 0:
-        return json.dumps({"outputs": console_outputs[addr]})
+        # log.debug(f"No text provided. Returning console outputs for {addr}")
+        return json.dumps({"outputs": console_outputs[addr], "clearChild": False})
 
-    textOut = parse_command(addr, textIn)
+    # log.debug(f"Operating with command {textIn} from {addr}")
+    textOut = process_command(addr, textIn)
+
+    # log.debug(f"Appending text to {addr}'s console")
     console_outputs[addr].append(f">>> {textIn}\n\n{textOut}")
 
-    if textOut == "!!clear":  # Clear command
+    if textOut == "!!clear":
+        # log.debug(f"Clearing console for {addr}")
         console_outputs[addr] = []
 
-    clear_child = False
-    if len(console_outputs[addr]) > 5:
-        clear_child = True
+    clear_child = len(console_outputs[addr]) > 5
+    if clear_child:
+        # log.debug(f"Deleting old console data (5+ lines) for {addr}")
         console_outputs[addr] = console_outputs[addr][1:]
 
+    # log.debug(f"Returning console outputs for {addr}")
     return json.dumps({"outputs": console_outputs[addr], "clearChild": clear_child})
 
 
 if __name__ == "__main__":
+    log.info("Opening db/main.db")
     db_session.global_init("db/main.db")
 
+
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=port)
 
