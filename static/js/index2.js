@@ -1,4 +1,4 @@
-username = "user1";
+var username = "Guest " + Math.floor(Math.random() * 1000000000);
 
 function addTextToConsole(text) {
     var pTag = document.createElement("p");
@@ -45,7 +45,7 @@ function sendData() { // Функция, вызываемая по кнопке
         // Настройки
         type: "POST",
         url: "/sendDataChat",
-        data: $('form').serialize() + '&username=' + username,
+        data: $('form').serialize() + '&username=' + username + "&update=false",
 
         // Функции обработчики
         success: function(response) {
@@ -70,7 +70,7 @@ function updateData() { // Функция, вызываемая по кнопк�
         // Настройки
         type: "POST",
         url: "/sendDataChat",
-        data: $('form').serialize() + '&username=' + username,
+        data: $('form').serialize() + '&username=' + username + "&update=true",
 
         // Функции обработчики
         success: function(response) {

@@ -3,6 +3,7 @@ from data import __all_models, db_session
 import json
 
 log = logging.getLogger()
+new_username = ""
 
 # ======== COMMANDS GLOBAL FUNCS ========
 def get_all_commands():
@@ -18,11 +19,13 @@ def get_all_commands():
 
 def process_command(username, text):
     # Importing LOG from app.py
+    global new_username
     import app
     global log
     log = app.log
 
-
+    username = new_username = decode_name(username)
+    print(username)
 
     all_commands = get_all_commands()
     command, *args = text.lower().split()
@@ -33,10 +36,10 @@ def process_command(username, text):
             args = [f"'{arg}'" for arg in args]
 
             log.debug(f"Executing {command} for {username}")
-            return eval(f"{db_command[3]}('{username}', {', '.join(args)})")
+            return eval(f"{db_command[3]}('{username}', {', '.join(args)})"), encode_name(new_username)
 
     log.debug(f"Can't find {command} for {username}")
-    return f"command \"{command}\" not found. Use help to get all commands"
+    return f"command \"{command}\" not found. Use help to get all commands", encode_name(new_username)
 
 
 # ======== LOCALIZATION ========
@@ -106,12 +109,34 @@ def get_all_langs():
     return keys
 
 
+def encode_name(username):
+    user = get_user(username)
+
+    if user is None:
+        return username
+
+    username_crypt = user.encoded_login
+
+    return username_crypt.decode("utf-8")
+
+
+def decode_name(username_crypt):
+    user = db_session.create_session().query(__all_models.Users).filter_by(encoded_login=username_crypt.encode("utf-8")).first()
+
+    if user is None:
+        return username_crypt
+
+    username = user.login
+
+    return username
+
+
 # ======== LOGIN AND USERS ========
 def get_user_friends(username):
     user = get_user(username)
 
     if user is None:
-        return "Can't find user"
+        return []
 
     if user and user.friends:
         log.debug(f"Found friends for {username}. Friends: {eval(user.friends)}")
@@ -146,22 +171,22 @@ def get_user_params(username):
     return None
 
 
-def edit_user_stats(key, value, type="+", username=""):
-    # type
+def edit_user_stats(key, value, operation="+", username=""):
+    # operation
     # + add, = set, * mul
 
     log.debug(f"Getting user params for {username}")
     stats = get_user_params(username)
 
 
-    log.debug(f"Applying '{type}{value}' operation for {key} param for {username}")
-    if type == "+":
+    log.debug(f"Applying '{operation}{value}' operation for {key} param for {username}")
+    if operation == "+":
         stats[key] += value
-    elif type == "-":
+    elif operation == "-":
         stats[key] -= value
-    elif type == "*":
+    elif operation == "*":
         stats[key] *= value
-    elif type == "=":
+    elif operation == "=":
         stats[key] = value
 
 
@@ -179,7 +204,6 @@ def edit_user_stats(key, value, type="+", username=""):
     db_sess.commit()
 
 
-
 def send_user_password(username):
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -195,7 +219,7 @@ def send_user_password(username):
     message = f'''
     Hello. 
     You have requested password recovery from account {user.login} in the Lambda-14 game. 
-    Your password: {Fernet(user.key_code_password).decrypt(user.password).decode('utf-8')}
+    Your password: {Fernet(user.personal_key).decrypt(user.password).decode('utf-8')}
     '''
     try:
         # setup the parameters of the message
@@ -265,9 +289,9 @@ def command_debug(username, *args):
 
     log.debug(f"[Command debug {username}] Executing")
 
-    return_data = f"sender address \t {username}\n"
+    return_data = f"sender name \t {username}\n"
     return_data += f"server time \t {datetime.now()}\n"
-    return_data += f"user \t {get_user(username) if get_user(username) else 'user not found'}"
+    return_data += f"user \t {get_user(username).login if get_user(username) else 'user not found'}"
 
     return return_data
 
@@ -310,13 +334,10 @@ def command_lang(username, *args):
 
 def command_status(username, *args):
     # log.debug(f"[Command status {username}] Executing")
-    if len(args) < 1:
-        # log.debug(f"[Command status {username}] No username provided")
-        return localize("STATUS_NO_USER", username)
+    target_name = username
+    if len(args) >= 1:
+        target_name = args[0]
 
-    target_name = args[0]
-    if target_name == "self":
-        target_name = get_user(username)
 
     # log.debug(f"[Command status {username}] Getting params for {username}")
     target_params = get_user_params(target_name)
@@ -325,7 +346,7 @@ def command_status(username, *args):
         log.debug(f"[Command status {username}] Cant find {target_name} user in params table")
         return localize("STATUS_NO_USER_IN_BD", username, args=[username])
 
-    return_data = []
+    return_data = [f"======== {target_name} ========"]
     for key, val in target_params.items():
         return_data.append(f'{key}: {val}')
 
@@ -380,6 +401,7 @@ def command_inv(username, *args):
 
 
 def command_login(username, *args):
+    global new_username
     from cryptography.fernet import Fernet
 
     log.debug(f"[Command login {username}] Executing")
@@ -399,14 +421,15 @@ def command_login(username, *args):
     if username in ["self", "guest"]:
         return localize("LOGIN_INCORRECT_NAME", username)
 
-    for user in get_users():
-        if user.login != username:
-            continue
+    user = get_user(username)
 
-        if Fernet(user.key_code_password).decrypt(user.password).decode('utf-8') != password:
+    if user is not None:
+        if Fernet(user.personal_key).decrypt(user.password).decode('utf-8') != password:
             log.debug(f"[Command login {username}] Incorrect password {password}")
             return localize('LOGIN_INCORRECT_PASSWORD', username, args=[username])
         else:
+            new_username = username
+
             log.debug(f"[Command login {username}] Logged successfully")
 
             return localize('LOGIN_SUCCESS', username, args=[username])
@@ -415,8 +438,9 @@ def command_login(username, *args):
     key = Fernet.generate_key()
 
     user = __all_models.Users()
-    user.login = username
-    user.key_code_password = key
+    user.login = new_username = username
+    user.encoded_login = Fernet(key).encrypt(bytes(user.login, 'utf-8'))
+    user.personal_key = key
     user.password = Fernet(key).encrypt(bytes(password, 'utf-8'))
 
     # Params
@@ -437,21 +461,21 @@ def command_email(username, *args):
     if len(args) < 1:
         return localize("EMAIL_NO_FOUND", username)
 
-    if username is None:
+    if username is None or get_user(username) is None:
         return localize("EMAIL_NO_LOGGED", username)
 
     email = args[0]
     db_sess = db_session.create_session()
-    for user in db_sess.query(__all_models.Users).all():
-        if user.login == username:
-            user.email = email
+    user = get_user(username)
+    user.email = email
+
     db_sess.commit()
     return localize("EMAIL_ADD_SUCCESS", username, args=[email, username])
 
 
 
 # ======== SHOP ========
-def get_shop_items(username):
+def get_shop_items():
     log.debug(f"Getting shop items")
     return list(map(lambda category: {category: list(map(lambda item: item, db_session.create_session().query(eval('__all_models.' + category)).all()))}, ['ItemMaterial', 'ItemHeal', 'ItemArmor', 'ItemMeleeWeapon', 'ItemRangeWeapon', 'ItemAmmo']))
 
@@ -473,7 +497,7 @@ def command_buy(username, *args):
         count = 1
 
     log.debug(f"[Command buy {username}] Getting all items")
-    lst = get_shop_items(username)
+    lst = get_shop_items()
 
     for i in lst:
         for category, items in i.items():
@@ -490,7 +514,7 @@ def command_buy(username, *args):
 
                     cost = item.price * count
 
-                    edit_user_stats("money", cost, type="-", username=username)
+                    edit_user_stats("money", cost, operation="-", username=username)
 
                     item_to_add = [count, category, vars(item)['name']]
                     add_item(item_to_add, username)  # [1, 'itemMaterial', 'ITEM_MATERIAL_DEBUG_NAME']
@@ -528,7 +552,7 @@ def command_sell(username, *args):
 
             cost = int(price * count // SELL_PRICE_DIVIDER)
 
-            edit_user_stats("money", cost, type="+", username=username)
+            edit_user_stats("money", cost, operation="+", username=username)
 
             add_item(item, username)  # добавляем в инвентарь отрицательное количество предмета
 
@@ -696,7 +720,7 @@ def command_chat(username, *args):
 
 
     if func == "add":
-        if chatter_name not in list(map(lambda user: user.login, get_users())) or chatter_name == username:
+        if chatter_name not in list(map(lambda x: x.login, get_users())) or chatter_name == username:
             return localize("CHAT_ADD_INVALID_NAME", username)
 
         if chatter_name in get_user_friends(username):

@@ -1,10 +1,11 @@
-username = "user1";
+var username = "Guest " + Math.floor(Math.random() * 1000000000);
 
 function addTextToConsole(text) {
-    var pTag = document.createElement("p");
-    var textNode = document.createTextNode(text);
+    pTag = document.createElement("p");
+    textNode = document.createTextNode(text);
     pTag.appendChild(textNode);
-    var consoleObj = document.getElementById("console");
+
+    consoleObj = document.getElementById("console");
     consoleObj.appendChild(pTag);
 }
 
@@ -50,6 +51,9 @@ function sendData() { // Функция, вызываемая по кнопке
         // Функции обработчики
         success: function(response) {
             var json = jQuery.parseJSON(response);
+            username = json.username;
+            console.log(username);
+
             outputs = json.outputs;
 
             if (json.clearChild) {
@@ -77,6 +81,7 @@ function updateData() {
         // Функции обработчики
         success: function(response) {
             var json = jQuery.parseJSON(response);
+            username = json.username;
 
             if (json.clearChild) {
                 clearFirstChild()

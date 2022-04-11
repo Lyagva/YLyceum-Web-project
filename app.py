@@ -9,7 +9,7 @@ log = set_logger()
 
 console_outputs = {}
 
-user_chats_opened = {}  # ip: name_of_chat
+user_chats_opened = {}
 user_chats_outputs = {"global": []}  # [name1, name2]: outputs
 
 
@@ -21,83 +21,40 @@ def index():
 
 @app.route("/chat/<name>")
 def index2(name):
-    from Command.commands import get_user_friends
+    username = sender = request.form["username"]
+    chat_name = "-".join(sorted([username, name])) if name != "global" else "global"
 
-    addr = request.remote_addr
+    user_chats_opened[username] = chat_name
 
-    # log.debug("Trying to get friends for", addr)
-    user_friends = get_user_friends(addr)
+    user_friends = get_user_friends(username)
 
-    if name not in ["global", *user_friends]:
-        # log.debug("Returning 404 template for" + addr)
-        return page_not_found('404')
-
-    # log.debug(f"Adding {addr} chat with name {name}")
-    user_chats_opened[addr] = name
-
-    # log.debug("Returning INDEX2 template for" + addr)
     return render_template("index2.html", user_friends=user_friends)
 
 
 @app.route("/sendDataChat", methods=["GET", "POST"])
 def chat():
-    addr = request.remote_addr
-    name_from = request.form["username"]
+    username = sender = request.form["username"]
+    update = True if request.form["update"] == "true" else False
+    textIn = request.form["commandInput"]
 
-    # Name To
-    name_to = "global"
-    try:
-        log.debug(f"Trying to get chat by {addr}")
-        name_to = user_chats_opened[addr]
-    except KeyError:
-        redirect("global")
+    if username not in user_chats_opened.keys():
+        user_chats_opened[username] = "global"
 
-    # Making cool name
-    if name_from is None:
-        # log.debug("Making cool name for guest")
-        name_from = f"Guest {'.'.join(addr.split('.')[:3])}.###"
+    chat_name = user_chats_opened[username]
 
-    if request.method == "POST":
-        textIn = request.form["commandInput"]
-        if textIn:
-            if name_to == "global":
-                # log.debug(f"Appending message to {name_to} chat with text {textIn}")
-                user_chats_outputs["global"].append(f"[{name_from}] >>>>>> {textIn}")
-            else:
-                chat_name_from = f"{name_from}-{name_to}"
-                if chat_name_from not in user_chats_outputs.keys():
-                    # log.debug(f"Creating chat {name_to}")
-                    user_chats_outputs[chat_name_from] = []
+    if not update:
+        user_chats_outputs[chat_name].append(f"{sender} >>> {textIn}")
 
-                # log.debug(f"Appending message to {chat_name_from} chat with text {textIn}")
-                user_chats_outputs[chat_name_from].append(f"[{name_from}] >>>>>> {textIn}")
+    current_chat = user_chats_outputs[chat_name]
 
-                chat_name_to = f"{name_to}-{name_from}"
-                if chat_name_to not in user_chats_outputs.keys():
-                    # log.debug(f"Creating chat {chat_name_to}")
-                    user_chats_outputs[chat_name_to] = []
-
-                # log.debug(f"Appending message to {chat_name_to} chat with text {textIn}")
-                user_chats_outputs[chat_name_to].append(f"[{name_from}] >>>>>> {textIn}")
-
-        chat_name_from = f"{name_from}-{name_to}"
-        return "Shit"
-
-
-    if request.method == "GET":
-        chat_name_from = f"{name_from}-{name_to}"
-        if name_to == "global":
-            chat_name_from = name_to
-
-        # log.debug(f"Returning {name_from} chat data")
-        return json.dumps({"outputs": user_chats_outputs[chat_name_from]})
-
-    return "Secret achievement"
-
+    return_data = {"ouputs": current_chat, "username": username}
+    print(user_chats_opened)
+    print(user_chats_outputs)
+    return json.dumps(return_data)
 
 @app.route("/sendData", methods=["GET", "POST"])
 def post():
-    username = request.form["username"]
+    username = new_username = request.form["username"]
     update = True if request.form["update"] == "true" else False
 
     if username not in console_outputs:
@@ -106,16 +63,16 @@ def post():
 
     if update:
         # log.debug(f"Returning console outputs for {addr}")
-        return json.dumps({"outputs": console_outputs[username], "clearChild": False})
+        return json.dumps({"outputs": console_outputs[username], "clearChild": False, "username": new_username})
 
     textIn = request.form["commandInput"]
 
     if len(textIn) == 0:
         # log.debug(f"No text provided. Returning console outputs for {addr}")
-        return json.dumps({"outputs": console_outputs[username], "clearChild": False})
+        return json.dumps({"outputs": console_outputs[username], "clearChild": False, "username": new_username})
 
     # log.debug(f"Operating with command {textIn} from {addr}")
-    textOut = process_command(username, textIn)
+    textOut, new_username = process_command(username, textIn)
 
     # log.debug(f"Appending text to {addr}'s console")
     console_outputs[username].append(f">>> {textIn}\n\n{textOut}")
@@ -130,7 +87,7 @@ def post():
         console_outputs[username] = console_outputs[username][1:]
 
     # log.debug(f"Returning console outputs for {addr}")
-    return json.dumps({"outputs": console_outputs[username], "clearChild": clear_child})
+    return json.dumps({"outputs": console_outputs[username], "clearChild": clear_child, "username": new_username})
 
 
 @app.errorhandler(404)
