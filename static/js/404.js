@@ -60,20 +60,20 @@ function update() {
     all_canvas.style.marginLeft = positionLeft + "px";
     all_canvas.style.marginTop = positionTop + "px";
 
-    setTimeout(update, 20);
+    setTimeout(update, 10);
 }
 var pageWidth = window.innerWidth;
 var pageHeight = window.innerHeight;
 
-var positionLeft = 0
-var positionTop = 0
+var positionLeft = 0;
+var positionTop = 0;
 
-var speed_x = 1
-var speed_y = 1
+var speed_x = 1;
+var speed_y = 1;
 
 paint_4(document.querySelector("#c1"));
 paint_0(document.querySelector("#c2"));
 paint_4(document.querySelector("#c3"));
-paint_phrase(document.querySelector("#c4"), "Page not found error")
+paint_phrase(document.querySelector("#c4"), "Page not found error");
 
-setTimeout(update, 20);
+setTimeout(update, 10);

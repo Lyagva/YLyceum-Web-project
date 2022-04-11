@@ -3,6 +3,7 @@ body {
 }
 
 .all_canvas {
+    border: 2px solid white;
     width: 40%;
     height: 50%;
 }

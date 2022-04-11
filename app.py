@@ -30,7 +30,7 @@ def index2(name):
 
     if name not in ["global", *user_friends]:
         # log.debug("Returning 404 template for" + addr)
-        return render_template("404.html")
+        return page_not_found('404')
 
     # log.debug(f"Adding {addr} chat with name {name}")
     user_chats_opened[addr] = name
