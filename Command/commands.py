@@ -368,7 +368,7 @@ def command_status(addr, *args):
         username = get_user_by_ip(addr)
 
     log.debug(f"[Command status {addr}] Getting params for {username}")
-    user_params = get_user_params(username)
+    user_params = get_user_params(username=username)
 
     if user_params is None:
         log.debug(f"[Command status {addr}] Cant find {username} user in params table")
@@ -767,7 +767,6 @@ def command_chat(addr, *args):
     chatter_name = args[1]
 
 
-
     if func == "add":
         if chatter_name not in list(map(lambda user: user.login, get_users())) or chatter_name == get_user_by_ip(addr):
             return localize("CHAT_ADD_INVALID_NAME", addr=addr)
@@ -793,12 +792,12 @@ def command_chat(addr, *args):
 
         db_sess.commit()
 
-        return localize("CHAT_ADD_SUCCESS", addr=addr)
+        return localize("CHAT_ADD_SUCCESS", addr=addr, args=[chatter_name])
 
 
 
     if chatter_name not in get_user_friends(addr):
-        return localize("CHAT_REMOVE_INVALID_NAME", addr=addr)
+        return localize("CHAT_REMOVE_INVALID_NAME", addr=addr, args=[chatter_name])
 
 
     db_sess = db_session.create_session()
@@ -817,7 +816,7 @@ def command_chat(addr, *args):
 
     db_sess.commit()
 
-    return localize("CHAT_REMOVE_SUCCESS", addr=addr)
+    return localize("CHAT_REMOVE_SUCCESS", addr=addr, args=[chatter_name])
 
 
 if __name__ == '__main__':

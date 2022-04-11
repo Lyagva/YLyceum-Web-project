@@ -84,3 +84,12 @@ ITEM_MELEE_WEAPON_DEBUG_DESC;Debug melee desc
 ;
 ITEM_RANGE_WEAPON_DEBUG_NAME;Debug range
 ITEM_RANGE_WEAPON_DEBUG_DESC;Debug range desc
+;
+CHAT_NO_FUNC;No function provided
+CHAT_INVALID_FUNC;Available function arguments: add, remove
+CHAT_NO_NAME;No name provided
+CHAT_ADD_INVALID_NAME;User not found
+CHAT_ADD_ALREADY;You already have this chat
+CHAT_ADD_SUCCESS;Successfully added chat with user "{}"
+CHAT_REMOVE_INVALID_NAME;No chat with user "{}"
+CHAT_REMOVE_SUCCESS;Successfully removed chat with user "{}"
