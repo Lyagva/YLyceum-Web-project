@@ -179,7 +179,6 @@ def edit_user_stats(key, value, type="+", username=""):
     db_sess.commit()
 
 
-
 def send_user_password(username):
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -219,10 +218,10 @@ def send_user_password(username):
 
         # Login Credentials for sending the mail
         server.login(msg['From'], password)
-
         # send the message via the server.
         server.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception as e:
+        print(e)
         return localize("PASSWORD_RECOVERY_EMAIL_NOT_VALID", username)
 
     return localize("PASSWORD_RECOVERY_SUCCESS_SEND_MAIL", username, args=[username])
@@ -267,7 +266,7 @@ def command_debug(username, *args):
 
     return_data = f"sender address \t {username}\n"
     return_data += f"server time \t {datetime.now()}\n"
-    return_data += f"user \t {get_user(username) if get_user(username) else 'user not found'}"
+    return_data += f"user \t {get_user(username).login if get_user(username) else 'user not found'}"
 
     return return_data
 
@@ -299,7 +298,7 @@ def command_lang(username, *args):
     # log.debug(f"[Command lang {username}] Opening main.db")
     db_sess = db_session.create_session()
     # log.debug(f"[Command lang {username}] Getting user")
-    user = db_sess.query(__all_models.Users).get(username).first()
+    user = db_sess.query(__all_models.Users).get(username)
     # log.debug(f"[Command lang {username}] Setting lang")
     user.lang = lang.upper()
     # log.debug(f"[Command lang {username}] Commiting to main.db")
@@ -317,9 +316,11 @@ def command_status(username, *args):
     target_name = args[0]
     if target_name == "self":
         target_name = get_user(username)
+        target_params = get_user_params(target_name.login)
+    else:
+        target_params = get_user_params(target_name)
 
     # log.debug(f"[Command status {username}] Getting params for {username}")
-    target_params = get_user_params(target_name)
 
     if target_params is None:
         log.debug(f"[Command status {username}] Cant find {target_name} user in params table")
