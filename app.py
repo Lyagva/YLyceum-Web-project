@@ -41,10 +41,8 @@ def index2(name):
 
 @app.route("/sendDataChat", methods=["GET", "POST"])
 def chat():
-    from Command.commands import get_user_by_ip
-
     addr = request.remote_addr
-    name_from = get_user_by_ip(addr)
+    name_from = request.form["username"]
 
     # Name To
     name_to = "global"
@@ -99,38 +97,40 @@ def chat():
 
 @app.route("/sendData", methods=["GET", "POST"])
 def post():
-    addr = request.remote_addr
+    username = request.form["username"]
+    update = True if request.form["update"] == "true" else False
 
-    if addr not in console_outputs:
-        console_outputs[addr] = []
+    if username not in console_outputs:
+        console_outputs[username] = []
 
-    if request.method == "GET":
+
+    if update:
         # log.debug(f"Returning console outputs for {addr}")
-        return json.dumps({"outputs": console_outputs[addr], "clearChild": False})
+        return json.dumps({"outputs": console_outputs[username], "clearChild": False})
 
     textIn = request.form["commandInput"]
 
     if len(textIn) == 0:
         # log.debug(f"No text provided. Returning console outputs for {addr}")
-        return json.dumps({"outputs": console_outputs[addr], "clearChild": False})
+        return json.dumps({"outputs": console_outputs[username], "clearChild": False})
 
     # log.debug(f"Operating with command {textIn} from {addr}")
-    textOut = process_command(addr, textIn)
+    textOut = process_command(username, textIn)
 
     # log.debug(f"Appending text to {addr}'s console")
-    console_outputs[addr].append(f">>> {textIn}\n\n{textOut}")
+    console_outputs[username].append(f">>> {textIn}\n\n{textOut}")
 
     if textOut == "!!clear":
         # log.debug(f"Clearing console for {addr}")
-        console_outputs[addr] = []
+        console_outputs[username] = []
 
-    clear_child = len(console_outputs[addr]) > 5
+    clear_child = len(console_outputs[username]) > 5
     if clear_child:
         # log.debug(f"Deleting old console data (5+ lines) for {addr}")
-        console_outputs[addr] = console_outputs[addr][1:]
+        console_outputs[username] = console_outputs[username][1:]
 
     # log.debug(f"Returning console outputs for {addr}")
-    return json.dumps({"outputs": console_outputs[addr], "clearChild": clear_child})
+    return json.dumps({"outputs": console_outputs[username], "clearChild": clear_child})
 
 
 @app.errorhandler(404)

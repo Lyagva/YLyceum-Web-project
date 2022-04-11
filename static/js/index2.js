@@ -1,3 +1,5 @@
+username = "user1";
+
 function addTextToConsole(text) {
     var pTag = document.createElement("p");
     var textNode = document.createTextNode(text);
@@ -43,7 +45,7 @@ function sendData() { // Функция, вызываемая по кнопке
         // Настройки
         type: "POST",
         url: "/sendDataChat",
-        data: $('form').serialize(),
+        data: $('form').serialize() + '&username=' + username,
 
         // Функции обработчики
         success: function(response) {
@@ -66,8 +68,9 @@ function sendData() { // Функция, вызываемая по кнопке
 function updateData() { // Функция, вызываемая по кнопке
     $.ajax({
         // Настройки
-        type: "GET",
+        type: "POST",
         url: "/sendDataChat",
+        data: $('form').serialize() + '&username=' + username,
 
         // Функции обработчики
         success: function(response) {

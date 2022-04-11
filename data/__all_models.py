@@ -33,7 +33,6 @@ class Users(SqlAlchemyBase):
     login = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
     password = sqlalchemy.Column(sqlalchemy.String)
     key_code_password = sqlalchemy.Column(sqlalchemy.String)
-    ip = sqlalchemy.Column(sqlalchemy.String)
     lang = sqlalchemy.Column(sqlalchemy.String, default="EN")
     email = sqlalchemy.Column(sqlalchemy.String)
     friends = sqlalchemy.Column(sqlalchemy.String, default="[]")
