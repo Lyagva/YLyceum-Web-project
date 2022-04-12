@@ -1,10 +1,8 @@
-<pre id="taag_output_text" class="fig" contenteditable="true"><br class="Apple-interchange-newline"/>
- ____                   ___        ___                 ____   _____  
+<pre id="taag_output_text" class="fig" contenteditable="true"><br class="Apple-interchange-newline"/> ____                   ___        ___                 ____   _____  
 |    |   _____    _____ \_ |_    _| _/ ____           /_   | /     | 
 |    |   \__  \  /     \| __ \  / __ |\__  \    ______  |  |/  /|  |_
 |    |___ / __ \|  Y Y  \ \_\ \/ /_/ | / __ \_ /_____/  |  /  /_|   /
-|_______/(______/__|_|__/_____/\_____|(______/          |__\_____  | 
-</pre>
+|_______/(______/__|_|__/_____/\_____|(______/          |__\_____  |</pre>
 
 # Lambda-14
 
