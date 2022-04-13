@@ -184,11 +184,11 @@ def edit_user_stats(key, value, operation="+", username=""):
     # operation
     # + add, = set, * mul
 
-    log.debug(f"Getting user params for {username}")
+    # log.debug(f"Getting user params for {username}")
     stats = get_user_params(username)
 
 
-    log.debug(f"Applying '{operation}{value}' operation for {key} param for {username}")
+    # log.debug(f"Applying '{operation}{value}' operation for {key} param for {username}")
     if operation == "+":
         stats[key] += value
     elif operation == "-":
@@ -199,17 +199,17 @@ def edit_user_stats(key, value, operation="+", username=""):
         stats[key] = value
 
 
-    log.debug("Opening main.db session")
+    # log.debug("Opening main.db session")
     db_sess = db_session.create_session()
 
-    log.debug(f"Getting user params by name {username}")
+    # log.debug(f"Getting user params by name {username}")
     user_params = db_sess.query(__all_models.UsersParams).get(username)
-    log.debug(f"Editing {username} params to '{stats}'")
+    # log.debug(f"Editing {username} params to '{stats}'")
     user_params.stats = json.dumps(stats)
 
-    log.debug(f"Appending data to main.db for user {username}")
+    # log.debug(f"Appending data to main.db for user {username}")
     db_sess.add(user_params)
-    log.debug("Closing main.db")
+    # log.debug("Closing main.db")
     db_sess.commit()
 
 
