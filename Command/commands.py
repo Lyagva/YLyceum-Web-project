@@ -679,7 +679,7 @@ def get_items_by_user(username=""):
 
 def add_item(item, username=""):
     # Item
-    # [count, durability, table, name]
+    # [count, table, name]
     db_sess = db_session.create_session()
 
     # Getting params
@@ -691,17 +691,16 @@ def add_item(item, username=""):
     # Getting inventory
     inventory = get_items_by_user(username=username)
 
+    print(item)
     # Check if item already in inventory
     for index, invItem in enumerate(inventory):
-        if item[1] == invItem[1]:
-            if item[1] in ["ItemMaterial", "ItemAmmo", "ItemHeal"]:  # Stackable items
-                invItem[0] += item[0]
-                if invItem[0] <= 0:
-                    inventory.pop(index)
-                else:
-                    inventory[index] = invItem
+        print(invItem)
+        if item[2] == invItem[2] or item[2] == localize(invItem[2], username):
+            invItem[0] += item[0]
+            if invItem[0] <= 0:
+                inventory.pop(index)
             else:
-                inventory.append(item)
+                inventory[index] = invItem
 
             userParams.items = json.dumps({"items": inventory})
             db_sess.commit()
@@ -779,6 +778,107 @@ def command_chat(username, *args):
     db_sess.commit()
 
     return localize("CHAT_REMOVE_SUCCESS", username)
+
+# ============= Battle ==============
+def get_user_equip(username):
+    return json.loads(db_session.create_session().query(__all_models.UsersParams).get(username).equipment)
+
+
+def command_equip(username, *args):
+    if not get_user(username):
+        return localize("USER_NOT_FOUND", username)
+
+    if len(args) < 1:
+        return localize("EQUIP_NO_ITEM", username)
+
+    item_name = " ".join(args).strip().capitalize()
+
+    item_type = ''
+    item_class = None
+
+    user_inv = get_items_by_user(username)
+    shop_itm = get_shop_items()
+
+    for dct in shop_itm:
+        for key, val in dct.items():
+            for item in val:
+                if localize(item.name, username) == item_name:
+                    if key not in ["ItemHeal", "ItemArmor", "ItemMeleeWeapon", "ItemRangeWeapon"]:
+                        return localize("EQUIP_INCORRECT_TYPE", username, args=[key])
+                    item_type = key
+                    item_class = item
+
+    if item_class is None:
+        return localize("EQUIP_NO_SUCH_ITEM", username)
+
+    if not list(filter(lambda itm: localize(itm[2], username) == item_name, user_inv)):
+        return localize("EQUIP_NO_IN_INV", username)
+
+    user_equip = get_user_equip(username)
+    if item_type == "ItemArmor":
+        item_sub_type = item_class.slot
+
+        for item in user_inv:
+            if item_name == localize(item[2], username):
+                if user_equip[item_type][item_sub_type] != '':
+                    old_equip = user_equip[item_type][item_sub_type]
+
+                    item = [1, item_type, old_equip]
+                    add_item(item, username)
+
+                    item = [-1, item_type, item_name]
+                    add_item(item, username)
+
+                    user_equip[item_type][item_sub_type] = item_name
+
+                else:
+                    user_equip[item_type][item_sub_type] = item_name
+
+                    item = [-1, item_type, item_name]
+                    add_item(item, username)
+
+
+    elif item_type == "ItemHeal":  # equip[heal] = [count, name]
+        for item in user_inv:
+            if item_name == localize(item[2], username):
+
+                if user_equip[item_type] != '':
+                    if user_equip[item_type][1] == item_name:  # стакаем
+                        user_equip[item_type][0] += item[0]
+                    else:  # меняем
+                        item_old = [user_equip[item_type][0], "ItemHeal", user_equip[item_type][1]]
+                        add_item(item_old, username)
+
+                        user_equip[item_type] = [item[0], item_name]
+                else:
+                    user_equip[item_type] = [item[0], item_name]
+
+                item[0] = -item[0]
+                add_item(item, username)
+
+    else:
+        if not user_equip[item_type] == '':
+            old_equip = user_equip[item_type]
+            for dct in shop_itm:
+                for key, val in dct.items():
+                    for item in val:
+                        if localize(item.name, username) == old_equip:
+                            item = [1, key, item.name]
+                            add_item(item, username)
+
+        user_equip[item_type] = item_name
+
+        for item in user_inv:
+            if item_name == localize(item[2], username):
+                item[0] = -1
+                add_item(item, username)
+
+    db_sess = db_session.create_session()
+    user = db_sess.query(__all_models.UsersParams).get(username)
+    user.equipment = json.dumps(user_equip)
+    db_sess.commit()
+
+    return localize("EQUIP_SUCCESS", username)
 
 
 if __name__ == '__main__':

@@ -26,6 +26,9 @@ class UsersParams(SqlAlchemyBase):
     default_items = {"items": [[1, "ItemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
     items = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_items))
 
+    default_equip = {"ItemMeleeWeapon": '', "ItemRangeWeapon": '', "ItemHeal": '', "ItemArmor": {"head": '', "torso": '', "hands": '', "legs": '', "feet": ''}}
+    equipment = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_equip))
+
 
 class Users(SqlAlchemyBase):
     __tablename__ = "users"
