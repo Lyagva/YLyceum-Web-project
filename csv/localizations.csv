@@ -14,6 +14,7 @@ HELP_INV;Shows your inventory
 HELP_SELL;Used for dropping items
 HELP_BUY;Used for acquire items
 HELP_CHAT;Use "chat add <username>" to add chat with player. Use "chat remove <username>" to remove chat with player
+HELP_EQUIP;Use "equip <item_name>" where "item name" type is armor, weapon or heal to equip your person
 ;
 ;
 LOGIN_NO_NAME;No username provided
@@ -72,6 +73,8 @@ ITEM_ARMOR_DEBUG_DESC;Debug armor desc
 ;
 ITEM_HEAL_DEBUG_NAME;Debug heal
 ITEM_HEAL_DEBUG_DESC;Debug heal desc
+ITEM_HEAL_LOW_NAME;Low heal
+ITEM_HEAL_LOW_DESC;Low heal desc
 ;
 ;
 ITEM_MATERIAL_DEBUG_NAME;Debug material
@@ -93,3 +96,11 @@ CHAT_ADD_ALREADY;You already have this chat
 CHAT_ADD_SUCCESS;Successfully added chat with user "{}"
 CHAT_REMOVE_INVALID_NAME;No chat with user "{}"
 CHAT_REMOVE_SUCCESS;Successfully removed chat with user "{}"
+;
+;
+USER_NOT_FOUND;You have not logged
+EQUIP_NO_ITEM;No item provided
+EQUIP_INCORRECT_TYPE;Type "{}" not subject to equipment
+EQUIP_NO_SUCH_ITEM;The item does not exist
+EQUIP_NO_IN_INV;No such item in inventory
+EQUIP_SUCCESS;Successfully equip item
