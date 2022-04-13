@@ -121,6 +121,9 @@ def encode_name(username):
 
 
 def decode_name(username_crypt):
+    if username_crypt is None:
+        username_crypt = "!!"
+
     user = db_session.create_session().query(__all_models.Users).filter_by(encoded_login=username_crypt.encode("utf-8")).first()
 
     if user is None:
