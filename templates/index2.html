@@ -26,15 +26,19 @@
         </header>
 
         <!-- Main block (console) -->
-        <main role="main" id="console" class="container bg-dark text-light">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-2">
+                    <a class="nav-link text-light" data-toggle="tab" href="global">global</a>
+                    {% for friend in user_friends %}
+                        <a class="nav-link text-light" data-toggle="tab" href={{friend}}> {{friend}} </a>
+                    {% endfor %}
+                </div>
 
-        </main>
+                <main role="main" id="console" class="container text-light col">
 
-        <div style="position: fixed;padding-top: 70px;padding-left:10px;">
-            <a class="nav-link text-light" data-toggle="tab" href="global">global</a>
-            {% for friend in user_friends %}
-                <a class="nav-link text-light" data-toggle="tab" href={{friend}}> {{friend}} </a>
-            {% endfor %}
+                </main>
+            </div>
         </div>
 
         <!-- Footer (ввод команды) -->

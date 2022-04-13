@@ -4,6 +4,9 @@ from Logger import set_logger
 from Command.commands import *
 from data import db_session
 
+
+start_msg = """"""
+
 app = Flask(__name__)
 log = set_logger()
 
@@ -59,8 +62,6 @@ def chat():
     current_chat = user_chats_outputs[chat_name]
 
     return_data = {"outputs": current_chat, "username": username}
-    print(user_chats_opened)
-    print(user_chats_outputs)
     return json.dumps(return_data)
 
 
@@ -75,7 +76,7 @@ def post():
     update = True if request.form["update"] == "true" else False
 
     if username not in console_outputs:
-        console_outputs[username] = []
+        console_outputs[username] = [start_msg]
 
 
     if update:
