@@ -731,6 +731,7 @@ def command_chat(username, *args):
 
 
         # APPENDING TO SENDER
+        print(username)
         user = db_sess.query(__all_models.Users).get(username)
         friends = eval(user.friends)
         friends.append(str(chatter_name))

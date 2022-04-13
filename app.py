@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, json, request, redirect
+from flask import Flask, render_template, json, request, redirect, make_response
 from Logger import set_logger
 from Command.commands import *
 from data import db_session
@@ -19,9 +19,14 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/chat/<name>")
+@app.route("/chat/<name>", methods=["GET", "POST"])
 def index2(name):
-    username = sender = request.form["username"]
+    username = request.cookies.get("username")
+    if request.method == "POST":
+        if username == "null" or username is None:
+            username = request.form["username"]
+    username = decode_name(username)
+
     chat_name = "-".join(sorted([username, name])) if name != "global" else "global"
 
     user_chats_opened[username] = chat_name
@@ -33,9 +38,12 @@ def index2(name):
 
 @app.route("/sendDataChat", methods=["GET", "POST"])
 def chat():
-    username = sender = request.form["username"]
+    username = request.cookies.get("username")
+    if username == "null" or username is None:
+        username = request.form["username"]
+    sender = username = decode_name(username)
+
     update = True if request.form["update"] == "true" else False
-    textIn = request.form["commandInput"]
 
     if username not in user_chats_opened.keys():
         user_chats_opened[username] = "global"
@@ -43,18 +51,27 @@ def chat():
     chat_name = user_chats_opened[username]
 
     if not update:
+        textIn = request.form["commandInput"]
         user_chats_outputs[chat_name].append(f"{sender} >>> {textIn}")
 
+    if chat_name not in user_chats_outputs.keys():
+        user_chats_outputs[chat_name] = []
     current_chat = user_chats_outputs[chat_name]
 
-    return_data = {"ouputs": current_chat, "username": username}
+    return_data = {"outputs": current_chat, "username": username}
     print(user_chats_opened)
     print(user_chats_outputs)
     return json.dumps(return_data)
 
+
 @app.route("/sendData", methods=["GET", "POST"])
 def post():
-    username = new_username = request.form["username"]
+    username = request.cookies.get("username")
+    if username == "null" or username is None:
+        username = request.form["username"]
+    new_username = username
+
+
     update = True if request.form["update"] == "true" else False
 
     if username not in console_outputs:
@@ -87,7 +104,11 @@ def post():
         console_outputs[username] = console_outputs[username][1:]
 
     # log.debug(f"Returning console outputs for {addr}")
-    return json.dumps({"outputs": console_outputs[username], "clearChild": clear_child, "username": new_username})
+    resp = make_response(json.dumps({"outputs": console_outputs[username],
+                                     "clearChild": clear_child,
+                                     "username": new_username}))
+    resp.set_cookie('username', new_username)
+    return resp
 
 
 @app.errorhandler(404)

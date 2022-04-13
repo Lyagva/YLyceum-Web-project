@@ -10,12 +10,12 @@ function addTextToConsole(text) {
 }
 
 function clearFirstChild() {
-    var consoleObj = document.getElementById("console");
+    consoleObj = document.getElementById("console");
     consoleObj.removeChild(consoleObj.firstChild);
 }
 
 function updateConsole(outputs) {
-    var consoleObj = document.getElementById("console");
+    consoleObj = document.getElementById("console");
     if (outputs.length == 0) {
         consoleObj.innerHTML = '';
         return;
@@ -36,7 +36,7 @@ function updateConsole(outputs) {
 
 function submitForm() {
     sendData();
-    var textField = document.getElementById('commandInput');
+    textField = document.getElementById('commandInput');
     textField.value = "";
 }
 
@@ -50,7 +50,7 @@ function sendData() { // Функция, вызываемая по кнопке
 
         // Функции обработчики
         success: function(response) {
-            var json = jQuery.parseJSON(response);
+            json = jQuery.parseJSON(response);
             username = json.username;
             console.log(username);
 
@@ -73,14 +73,14 @@ function sendData() { // Функция, вызываемая по кнопке
 function updateData() {
     $.ajax({
         // Настройки
-        type: "Post",
+        type: "POST",
         url: "/sendData",
         data: $('form').serialize() + "&username=" + username + "&update=true",
 
 
         // Функции обработчики
         success: function(response) {
-            var json = jQuery.parseJSON(response);
+            json = jQuery.parseJSON(response);
             username = json.username;
 
             if (json.clearChild) {

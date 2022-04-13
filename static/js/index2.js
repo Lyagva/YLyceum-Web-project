@@ -50,7 +50,7 @@ function sendData() { // Функция, вызываемая по кнопке
         // Функции обработчики
         success: function(response) {
             var json = jQuery.parseJSON(response);
-            outputs = json.outputs;
+            var outputs = json.outputs;
 
             if (json.clearChild) {
                 clearFirstChild()
@@ -65,7 +65,7 @@ function sendData() { // Функция, вызываемая по кнопке
     });
 }
 
-function updateData() { // Функция, вызываемая по кнопке
+function updateChatData() {
     $.ajax({
         // Настройки
         type: "POST",
@@ -75,12 +75,13 @@ function updateData() { // Функция, вызываемая по кнопк�
         // Функции обработчики
         success: function(response) {
             var json = jQuery.parseJSON(response);
+            var outputs = json.outputs;
 
             if (json.clearChild) {
                 clearFirstChild()
             }
 
-            updateConsole(json.outputs);
+            updateConsole(outputs);
         },
 
         error: function(error) {
@@ -88,8 +89,8 @@ function updateData() { // Функция, вызываемая по кнопк�
         },
 
         complete: function() {
-            setTimeout(updateData, 500);
+            setTimeout(updateChatData, 500);
         }
     });
 }
-setTimeout(updateData, 500);
+setTimeout(updateChatData, 500);
