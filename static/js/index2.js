@@ -93,4 +93,5 @@ function updateChatData() {
         }
     });
 }
-setTimeout(updateChatData, 500);
+
+onload("updateChatData");
