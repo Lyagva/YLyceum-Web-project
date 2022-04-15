@@ -1,6 +1,7 @@
 import logging
 from data import __all_models, db_session
 import json
+from Command import Battle
 
 log = logging.getLogger()
 new_username = ""
@@ -164,7 +165,7 @@ def get_all_users_params(): # Delete
     return list(map(lambda user_p: user_p, db_session.create_session().query(__all_models.UsersParams).all()))
 
 
-def get_user(username : __all_models.Users):
+def get_user(username):
     return db_session.create_session().query(__all_models.Users).get(username)
 
 
@@ -373,12 +374,10 @@ def command_wiki(username, *args):
 
     if category == "all":
         # log.debug(f"[Command wiki {username}] Requesting all wikis")
-        return wiki_material(username) + wiki_ammo(username) + wiki_heal(username) + \
+        return wiki_material(username) + wiki_heal(username) + \
                wiki_armor(username) + wiki_melee(username) + wiki_range(username)
 
     # log.debug(f"[Command wiki {username}] Requesting {category} wiki")
-    if category == "ammo":
-        return wiki_ammo(username)
     if category == "armor":
         return wiki_armor(username)
     if category == "heal":
@@ -486,7 +485,7 @@ def command_email(username, *args):
 # ======== SHOP ========
 def get_shop_items():
     log.debug(f"Getting shop items")
-    return list(map(lambda category: {category: list(map(lambda item: item, db_session.create_session().query(eval('__all_models.' + category)).all()))}, ['ItemMaterial', 'ItemHeal', 'ItemArmor', 'ItemMeleeWeapon', 'ItemRangeWeapon', 'ItemAmmo']))
+    return list(map(lambda category: {category: list(map(lambda item: item, db_session.create_session().query(eval('__all_models.' + category)).all()))}, ['ItemMaterial', 'ItemHeal', 'ItemArmor', 'ItemMeleeWeapon', 'ItemRangeWeapon']))
 
 
 def command_buy(username, *args):
@@ -571,20 +570,6 @@ def command_sell(username, *args):
 
 
 # ======== WIKI ========
-def wiki_ammo(username):
-    items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemAmmo).all()))
-    outputText = ""
-
-    # AMMO
-    outputText += "======== AMMO ========\n"
-    outputText += "name \t description \t price buy/sell \n"
-    for item in items:
-        info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}']
-        outputText += localize("WIKI_AMMO_FORMAT", username, args=info) + "\n"
-
-    return outputText
-
-
 def wiki_armor(username):
     items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemArmor).all()))
     outputText = ""
@@ -648,10 +633,10 @@ def wiki_range(username):
 
     # RANGE
     outputText += "======== RANGE WEAPON ========\n"
-    outputText += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \t ammo \t hit chance \n"
+    outputText += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \t hit chance \n"
     for item in items:
         info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
-                item.energyCost, item.damage, item.piercing, item.ammoType, item.hitChance]
+                item.energyCost, item.damage, item.piercing, item.hitChance]
         outputText += localize("WIKI_RANGE_FORMAT", username, args=info) + "\n"
 
     return outputText

@@ -25,6 +25,7 @@ class UsersParams(SqlAlchemyBase):
     # [count, durability, table, itemName]
     default_items = {"items": [[1, "ItemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
     items = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_items))
+    battle_id = sqlalchemy.Column(sqlalchemy.Integer, default=-1)
 
     default_equip = {"ItemMeleeWeapon": '', "ItemRangeWeapon": '', "ItemHeal": '', "ItemArmor": {"head": '', "torso": '', "hands": '', "legs": '', "feet": ''}}
     equipment = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_equip))
@@ -117,13 +118,4 @@ class ItemRangeWeapon(SqlAlchemyBase):
     energyCost = sqlalchemy.Column(sqlalchemy.Integer)
     damage = sqlalchemy.Column(sqlalchemy.Integer)
     piercing = sqlalchemy.Column(sqlalchemy.Integer)
-    ammoType = sqlalchemy.Column(sqlalchemy.String)
     hitChance = sqlalchemy.Column(sqlalchemy.Integer) # %
-
-
-class ItemAmmo(SqlAlchemyBase):
-    __tablename__ = "itemAmmo"
-
-    name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-    description = sqlalchemy.Column(sqlalchemy.String)
-    price = sqlalchemy.Column(sqlalchemy.Integer)
