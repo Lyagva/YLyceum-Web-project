@@ -257,9 +257,9 @@ def send_user_password(username):
         # send the message via the server.
         server.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception as e:
-        return localize("PASSWORD_RECOVERY_EMAIL_NOT_VALID", username)
+        return localize("PASSWORD_RECOVERY_EMAIL_NOT_VALID", username, args=[user.email])
 
-    return localize("PASSWORD_RECOVERY_SUCCESS_SEND_MAIL", username, args=[username])
+    return localize("PASSWORD_RECOVERY_SUCCESS_SEND_MAIL", username, args=[user.email])
 
 
 def command_password_recovery(username, *args):
@@ -356,9 +356,21 @@ def command_status(username, *args):
         log.debug(f"[Command status {username}] Cant find {target_name} user in params table")
         return localize("STATUS_NO_USER_IN_BD", username, args=[username])
 
-    return_data = [f"======== {target_name} ========"]
+    return_data = [f"======== {target_name} stats ========"]
     for key, val in target_params.items():
         return_data.append(f'{key}: {val}')
+
+    target_equip = get_user_equip(target_name)
+    return_data.append(f"======== {target_name} equipment ========")
+    for key, val in target_equip.items():
+        if type(val) == dict:
+            return_data.append(f"{key}")
+            for k, v in val.items():
+                return_data.append(f"\t{k}: {v}")
+        elif type(val) == list:
+            return_data.append(f"{key}: {val[0]} of {val[1]}")
+        else:
+            return_data.append(f'{key}: {val}')
 
     # log.debug(f"[Command status {username}] Returning user params")
     return '\n'.join(return_data)
@@ -426,8 +438,20 @@ def command_login(username, *args):
         log.debug(f"[Command login {username}] No password provided")
         return localize('LOGIN_NO_PASSWORD', username)
 
-    if username in ["self", "guest"]:
-        return localize("LOGIN_INCORRECT_NAME", username)
+    if username not in ["n.e.o.n", "lyagva"]:
+        if len(args) >= 3:
+            return localize("LOGIN_INCORRECT_TYPE", username)
+
+        if list(filter(lambda x: x not in 'abcdefghijklmnopqrstuvwxyz0123456789-_', username)):
+            return localize("LOGIN_INCORRECT_TYPE", username)
+
+        if username in ["self", "guest", "global"]:
+            return localize("LOGIN_INCORRECT_NAME", username)
+    else:
+        if username == "n.e.o.n":
+            username = "N.E.O.N"
+        elif username == "lyagva":
+            username = "Lyagva"
 
     user = get_user(username)
 
