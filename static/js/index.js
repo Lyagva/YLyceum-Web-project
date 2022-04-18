@@ -100,4 +100,21 @@ function updateData() {
     });
 }
 
-onload("updateData");
+
+var timer = 0;
+var max_timer = 100;
+
+
+function onload() {
+    if (timer > max_timer) {
+    	document.getElementById("preloader").style.display = "none";
+    	setTimeout(updateData, 500);
+    }
+    else {
+        paint(document.getElementById("canvas"), "Lambda-14", timer / max_timer);
+        timer ++;
+        setTimeout(onload, 1);
+    }
+}
+
+setTimeout(onload, 1);

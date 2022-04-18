@@ -20,6 +20,7 @@ HELP_EQUIP;Use "equip <item_name>" where "item name" type is armor, weapon or he
 LOGIN_NO_NAME;No username provided
 LOGIN_NO_PASSWORD;No password provided
 LOGIN_INCORRECT_PASSWORD;The name "{}" is busy or the password is incorrect
+LOGIN_INCORRECT_TYPE;Incorrect login. Use also lowercase English letters, numbers, symbols "_" and "-"
 LOGIN_SUCCESS;You successfully logged to "{}"
 LOGIN_NEW_ACC_SUCCESS;You successfully created new account with name "{}". Don't lose your password!
 LOGIN_INCORRECT_NAME;"This name can't be used. Please, enter other name"
@@ -38,8 +39,8 @@ EMAIL_ADD_SUCCESS;Added email "{}" to user "{}"
 PASSWORD_RECOVERY_NO_USERNAME;No username provided
 PASSWORD_RECOVERY_NO_USER_IN_DB;The "{}" does not exist
 PASSWORD_RECOVERY_NO_USER_EMAIL;The "{}" does not have mail
-PASSWORD_RECOVERY_SUCCESS_SEND_MAIL;Successfully sent email to "{}" email
-PASSWORD_RECOVERY_EMAIL_NOT_VALID;The recipient address <email> is not a valid RFC-5321 address.
+PASSWORD_RECOVERY_SUCCESS_SEND_MAIL;Successfully sent email to "{}"
+PASSWORD_RECOVERY_EMAIL_NOT_VALID;The recipient address "{}" is not a valid RFC-5321 address.
 ;
 WIKI_HELP;"Available arguments: all, ammo, armor, heal, material, melee, range"
 WIKI_INCORRECT_CATEGORY;Incorrect category. Use "wiki" to get all categories

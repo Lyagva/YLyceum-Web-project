@@ -1,19 +1,44 @@
 import os
-from flask import Flask, render_template, json, request, redirect, make_response
-from Logger import set_logger
-from Command.commands import *
-from data import db_session
 
+from flask import Flask, render_template, json, request, make_response, jsonify
+from flask_restful import Api, Resource
+
+from Command.commands import *
+from Logger import set_logger
+from data import db_session
 
 start_msg = """"""
 
 app = Flask(__name__)
+
 log = set_logger()
 
 console_outputs = {}
 
 user_chats_opened = {}
 user_chats_outputs = {"global": []}  # [name1, name2]: outputs
+
+
+api = Api(app)
+
+
+class RestApi(Resource):
+    def get(self, username, type_info):
+        if type_info == "status":
+            return self.get_statistic(username)
+        elif type_info == "inventory":
+            return self.get_inventory(username)
+
+    @staticmethod
+    def get_statistic(username):
+        return jsonify({"data": command_status(username)})
+
+    @staticmethod
+    def get_inventory(username):
+        return jsonify({"data": command_inv(username)})
+
+
+api.add_resource(RestApi, '/api/v2/<string:username>/<string:type_info>')
 
 
 @app.route("/")

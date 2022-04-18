@@ -1,9 +1,58 @@
 var username = "Guest " + Math.floor(Math.random() * 1000000000);
+var adminArray = ["N.E.O.N", "Lyagva"];
+var subAdminArray = [];
 
 function addTextToConsole(text) {
     var pTag = document.createElement("p");
+
+    arrayText = text.split(" ");
+    if (adminArray.indexOf(arrayText[0]) != -1) {
+        command = arrayText[2];
+        console.log(command, arrayText)
+        if (command.indexOf("<") == 0) { // скрываем команду
+            arrayText.splice(2, 1);
+
+            if (command == "<warning>") {
+                pTag.classList.add('admin-warning');
+            }
+            if (command == "<make-admin>") {
+                pTag.classList.add("make-unmake-admin");
+                arrayText.push("is admin");
+
+                if (subAdminArray.indexOf(arrayText[2]) == -1) {
+                    subAdminArray.push(arrayText[2]);
+                }
+            }
+            if (command == "<unmake-admin>") {
+                pTag.classList.add("make-unmake-admin");
+                arrayText.push("is not admin");
+
+                if (subAdminArray.indexOf(arrayText[2]) != -1) {
+                    subAdminArray.splice(subAdminArray.indexOf(arrayText[2]), 1);
+                }
+            }
+        }
+    }
+    else {
+        if (subAdminArray.indexOf(arrayText[0]) != -1) {
+            command = arrayText[2];
+            console.log(command, arrayText)
+            if (command.indexOf("<") == 0) { // скрываем команду
+                arrayText.splice(2, 1);
+
+                if (command == "<warning>") {
+                    pTag.classList.add('subadmin-warning');
+                }
+            }
+        }
+
+    }
+
+    text = arrayText.join(" ");
+
     var textNode = document.createTextNode(text);
     pTag.appendChild(textNode);
+
     var consoleObj = document.getElementById("console");
     consoleObj.appendChild(pTag);
 }
@@ -94,4 +143,21 @@ function updateChatData() {
     });
 }
 
-onload("updateChatData");
+
+var timer = 0;
+var max_timer = 100;
+
+
+function onload() {
+    if (timer > max_timer) {
+    	document.getElementById("preloader").style.display = "none";
+    	setTimeout(updateChatData, 500);
+    }
+    else {
+        paint(document.getElementById("canvas"), "Lambda-14", timer / max_timer);
+        timer ++;
+        setTimeout(onload, 1);
+    }
+}
+
+setTimeout(onload, 1);

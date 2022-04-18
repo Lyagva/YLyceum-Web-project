@@ -40,22 +40,4 @@ function paint(elem, phrase, procent) {
             painter.fillText("Getting server data",  120 + max / 2 - 40,  175);
         }
     }
-
-
-}
-
-var timer = 0;
-var max_timer = 100;
-
-
-function onload(to_func) {
-    if (timer > max_timer) {
-    	document.getElementById("preloader").style.display = "none";
-    	setTimeout(to_func, 500);
-    }
-    else {
-        paint(document.getElementById("canvas"), "Lambda-14", timer / max_timer);
-        timer ++;
-        setTimeout(onload, 1);
-    }
 }
