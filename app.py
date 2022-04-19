@@ -13,10 +13,10 @@ app = Flask(__name__)
 
 log = set_logger()
 
-console_outputs = {}
-
-user_chats_opened = {}
-user_chats_outputs = {"global": []}  # [name1, name2]: outputs
+# console_outputs = {}
+#
+# user_chats_opened = {}
+# user_chats_outputs = {"global": []}  # [name1, name2]: outputs
 
 
 api = Api(app)
@@ -57,7 +57,9 @@ def index2(name):
 
     chat_name = "-".join(sorted([username, name])) if name != "global" else "global"
 
-    user_chats_opened[username] = chat_name
+    dct = get_vars()
+    dct["user_chats_opened"][username] = chat_name
+    set_vars(dct)
 
     user_friends = get_user_friends(username)
 
@@ -73,18 +75,22 @@ def chat():
 
     update = True if request.form["update"] == "true" else False
 
-    if username not in user_chats_opened.keys():
-        user_chats_opened[username] = "global"
+    dct = get_vars()
 
-    chat_name = user_chats_opened[username]
+    if username not in dct["user_chats_opened"].keys():
+        dct["user_chats_opened"][username] = "global"
+
+    chat_name = dct["user_chats_opened"][username]
 
     if not update:
         textIn = request.form["commandInput"]
-        user_chats_outputs[chat_name].append(f"{sender} >>> {textIn}")
+        dct["user_chats_outputs"][chat_name].append(f"{sender} >>> {textIn}")
 
-    if chat_name not in user_chats_outputs.keys():
-        user_chats_outputs[chat_name] = []
-    current_chat = user_chats_outputs[chat_name]
+    if chat_name not in dct["user_chats_outputs"].keys():
+        dct["user_chats_outputs"][chat_name] = []
+    current_chat = dct["user_chats_outputs"][chat_name]
+
+    set_vars(dct)
 
     return_data = {"outputs": current_chat, "username": username}
     return json.dumps(return_data)
@@ -92,50 +98,49 @@ def chat():
 
 @app.route("/sendData", methods=["GET", "POST"])
 def post():
-    global console_outputs
-
     username = request.cookies.get("username")
     if username == "null" or username is None:
         username = request.form["username"]
     new_username = username
 
+    dct = get_vars()
 
     update = True if request.form["update"] == "true" else False
 
-    if username not in console_outputs:
-        console_outputs[username] = [start_msg]
+    if username not in dct["console_outputs"]:
+        dct["console_outputs"][username] = [start_msg]
 
 
     if update:
         # log.debug(f"Returning console outputs for {addr}")
-        return json.dumps({"outputs": console_outputs[username], "clearChild": False, "username": new_username})
+        return json.dumps({"outputs": dct["console_outputs"][username], "clearChild": False, "username": new_username})
 
     textIn = request.form["commandInput"]
 
     if len(textIn) == 0:
         # log.debug(f"No text provided. Returning console outputs for {addr}")
-        return json.dumps({"outputs": console_outputs[username], "clearChild": False, "username": new_username})
+        return json.dumps({"outputs": dct["console_outputs"][username], "clearChild": False, "username": new_username})
 
     # log.debug(f"Operating with command {textIn} from {addr}")
     textOut, new_username = process_command(username, textIn)
 
     # log.debug(f"Appending text to {addr}'s console")
-    console_outputs[username].append(f">>> {textIn}\n\n{textOut}")
+    dct["console_outputs"][username].append(f">>> {textIn}\n\n{textOut}")
 
     if textOut == "!!clear":
         # log.debug(f"Clearing console for {addr}")
-        console_outputs[username] = []
+        dct["console_outputs"][username] = []
 
-    clear_child = len(console_outputs[username]) > 5
+    clear_child = len(dct["console_outputs"][username]) > 5
     if clear_child:
         # log.debug(f"Deleting old console data (5+ lines) for {addr}")
-        console_outputs[username] = console_outputs[username][1:]
+        dct["console_outputs"][username] = dct["console_outputs"][username][1:]
 
     # log.debug(f"Returning console outputs for {addr}")
-    print(get_console())
-    resp = make_response(json.dumps({"outputs": console_outputs[username],
+    resp = make_response(json.dumps({"outputs": dct["console_outputs"][username],
                                      "clearChild": clear_child,
                                      "username": new_username}))
+    set_vars(dct)
     resp.set_cookie('username', new_username)
     return resp
 
@@ -145,14 +150,14 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 
-def get_console():
-    global console_outputs
-    print(console_outputs)
-    return console_outputs.copy()
+def get_vars():
+    with open("vars.json") as file:
+        return json.loads(file.read())
 
-def set_console(console):
-    global console_outputs
-    console_outputs = console.copy()
+
+def set_vars(vars):
+    with open("vars.json", "w") as file:
+        file.write(json.dumps(vars))
 
 
 if __name__ == "__main__":
