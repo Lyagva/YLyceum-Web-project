@@ -131,4 +131,3 @@ dmypy.json
 
 # Other files
 /logs/
-/.env
