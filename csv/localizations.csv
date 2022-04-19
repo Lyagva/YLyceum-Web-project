@@ -49,7 +49,7 @@ WIKI_ARMOR_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~n
 WIKI_HEAL_FORMAT;{} ~t {} ~t {} ~t {} ~n
 WIKI_MATERIAL_FORMAT;{} ~t {} ~t {} ~n
 WIKI_MELEE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
-WIKI_RANGE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
+WIKI_RANGE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
 ;
 SELL_NO_ITEM_PROVIDED;No item name provided
 SELL_INVALID_COUNT;Please re-enter count
