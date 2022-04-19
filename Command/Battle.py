@@ -170,11 +170,10 @@ def turn_check(username):
     return False
 
 def send_message(username, text):
-    from app import get_console, set_console
-    console = get_console()
-    print(console)
-    console[Command.commands.encode_name(username)].append(text)
-    set_console(console)
+    from app import get_vars, set_vars
+    dct = get_vars()
+    dct["console_outputs"][Command.commands.encode_name(username)].append(text)
+    set_vars(dct)
 
 
 def create(username, *args):
@@ -194,6 +193,8 @@ def create(username, *args):
         weapon = get_battle_stats("melee", username)
         if weapon == -1:
             weapon = get_battle_stats("range", username)
+        if weapon == -1:
+            weapon = {"dmg": 1}
 
         bots[battle_id] = {"dmg": weapon["dmg"] * 1.2,
                            "def": get_battle_stats("def", username) * 1.2,
