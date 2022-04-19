@@ -1,6 +1,7 @@
 import logging
+from pprint import pprint
+
 from data import __all_models, db_session
-import app
 import random
 import json
 
@@ -60,6 +61,8 @@ def get_battle_stats(key, username):
         return get_defence(username)
     if key == "eng":
         return get_energy(username)
+    if key == "hp":
+        return get_hp(username)
     return -1
 
 def get_heal_amount(username):
@@ -160,6 +163,9 @@ def get_energy(username):
     user_params = db_session.create_session().query(__all_models.UsersParams).get(username)
     return json.loads(user_params.stats)["energy"]
 
+def get_hp(username):
+    return Command.commands.get_user_params(username)["hp"]
+
 def turn_check(username):
     battle_id = get_battle_id(username)
 
@@ -171,8 +177,10 @@ def turn_check(username):
 
 def send_message(username, text):
     from app import get_vars, set_vars
-    dct = get_vars()
+
+    dct = get_vars().copy()
     dct["console_outputs"][Command.commands.encode_name(username)].append(text)
+    print("Send msg", dct)
     set_vars(dct)
 
 
@@ -217,11 +225,10 @@ def pve_turn(battle_id):
     bot = bots[battle_id]
 
     if bot["energy"] < bot["energy_cost"]:
-        return_msg = bot_pass(battle_id)
+        bot_pass(battle_id)
     else:
-        return_msg = bot_attack(battle_id)
+        bot_attack(battle_id)
 
-    send_message(battle_sessions[battle_id]["members"][0], return_msg)
     turn(battle_id)
 
 
@@ -257,11 +264,13 @@ def escape(username):
     chance = random.random() * 100
 
     if chance > 50:
-        send_message(get_enemy(username, get_battle_id(username)), "Your enemy escaped from battle")
+        if battle_sessions[get_battle_id(username)]["type"] == "pvp":
+            send_message(get_enemy(username, get_battle_id(username)), "Your enemy escaped from battle")
 
         leave(username)
 
         return "You successfully escaped battle"
+    turn(get_battle_id(username))
     return "You can't escape battle"
 
 
@@ -348,7 +357,6 @@ def attack(username, *args):
     if random.randint(0, 100) <= \
             round(dmg * weapon["prc"] * weapon["ch"] / bots[battle_id]["def"] / 100):
 
-        dmg /= bots[battle_id]["def"]
         bots[battle_id]["hp"] -= dmg
 
         result = death_check(battle_id)
@@ -401,13 +409,14 @@ def battle_pass(username, *args):
 
 
 def bot_attack(battle_id):
+    username = battle_sessions[battle_id]["members"][0]
     bot = bots[battle_id]
 
-    dmg = bot["dmg"]
+    dmg = bot["dmg"] / get_battle_stats("def", username)
 
-    Command.commands.edit_user_stats("hp", -dmg, "+", battle_sessions[battle_id]["members"][0])
+    Command.commands.edit_user_stats("hp", -dmg, "+", username)
 
-    return f"Enemy bot hit you by {dmg} HP"
+    send_message(username, f"Enemy bot hit you by {dmg} HP")
 
 
 def bot_pass(battle_id):
@@ -415,14 +424,15 @@ def bot_pass(battle_id):
 
     bot["energy"] += 5
 
-    return "Enemy bot regenerated 5 energy"
+    send_message(battle_sessions[battle_id]["members"][0], "Enemy bot regenerated 5 energy")
 
 
 def death_check(battle_id):
     lobby_type = battle_sessions[battle_id]["type"]
 
     if lobby_type == "pve":
-        if bots[battle_id]["health"] <= 0:
+        print(bots[battle_id]["hp"], get_battle_stats("hp", battle_sessions[battle_id]["members"][0]))
+        if bots[battle_id]["hp"] <= 0:
             send_message(battle_sessions[battle_id]["members"][0],  "You won!")
             return True
 

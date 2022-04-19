@@ -104,11 +104,13 @@ def post():
     new_username = username
 
     dct = get_vars()
+    set_vars(dct)
 
     update = True if request.form["update"] == "true" else False
 
     if username not in dct["console_outputs"]:
         dct["console_outputs"][username] = [start_msg]
+        set_vars(dct)
 
 
     if update:
@@ -123,24 +125,28 @@ def post():
 
     # log.debug(f"Operating with command {textIn} from {addr}")
     textOut, new_username = process_command(username, textIn)
+    dct = get_vars()
 
     # log.debug(f"Appending text to {addr}'s console")
     dct["console_outputs"][username].append(f">>> {textIn}\n\n{textOut}")
+    set_vars(dct)
 
     if textOut == "!!clear":
         # log.debug(f"Clearing console for {addr}")
         dct["console_outputs"][username] = []
+        set_vars(dct)
 
     clear_child = len(dct["console_outputs"][username]) > 5
     if clear_child:
         # log.debug(f"Deleting old console data (5+ lines) for {addr}")
         dct["console_outputs"][username] = dct["console_outputs"][username][1:]
+        set_vars(dct)
 
     # log.debug(f"Returning console outputs for {addr}")
     resp = make_response(json.dumps({"outputs": dct["console_outputs"][username],
                                      "clearChild": clear_child,
                                      "username": new_username}))
-    set_vars(dct)
+    print(dct)
     resp.set_cookie('username', new_username)
     return resp
 
@@ -152,11 +158,12 @@ def page_not_found(e):
 
 def get_vars():
     with open("vars.json") as file:
-        return json.loads(file.read())
+        dct = json.loads(file.read())
+    return dct
 
 
 def set_vars(vars):
-    with open("vars.json", "w") as file:
+    with open("vars.json", "w+") as file:
         file.write(json.dumps(vars))
 
 
