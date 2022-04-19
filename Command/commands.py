@@ -26,7 +26,6 @@ def process_command(username, text):
     log = app.log
 
     username = new_username = decode_name(username)
-    print(username)
 
     all_commands = get_all_commands()
     command, *args = text.lower().split()

@@ -92,6 +92,8 @@ def chat():
 
 @app.route("/sendData", methods=["GET", "POST"])
 def post():
+    global console_outputs
+
     username = request.cookies.get("username")
     if username == "null" or username is None:
         username = request.form["username"]
@@ -130,6 +132,7 @@ def post():
         console_outputs[username] = console_outputs[username][1:]
 
     # log.debug(f"Returning console outputs for {addr}")
+    print(get_console())
     resp = make_response(json.dumps({"outputs": console_outputs[username],
                                      "clearChild": clear_child,
                                      "username": new_username}))
@@ -140,6 +143,16 @@ def post():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+
+def get_console():
+    global console_outputs
+    print(console_outputs)
+    return console_outputs.copy()
+
+def set_console(console):
+    global console_outputs
+    console_outputs = console.copy()
 
 
 if __name__ == "__main__":
