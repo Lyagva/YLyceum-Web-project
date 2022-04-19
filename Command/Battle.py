@@ -1,5 +1,6 @@
 import logging
 from data import __all_models, db_session
+import app
 import random
 import json
 
@@ -7,6 +8,8 @@ import Command.commands
 
 log = logging.getLogger()
 base_session = {"members": []}
+
+
 
 # {<Battle ID>: {"members": ["name1", "name2"], "type": "pvp"/"pve", "turn": 0}}
 battle_sessions = {}
@@ -151,24 +154,27 @@ def get_defence(username):
 
     defence += sum(armor_defence) ** 0.5
 
-    return defence
+    return defence if defence != 0 else 1
 
 def get_energy(username):
     user_params = db_session.create_session().query(__all_models.UsersParams).get(username)
     return json.loads(user_params.stats)["energy"]
 
 def turn_check(username):
-    if battle_sessions[get_battle_id(username)]["members"] \
-        [battle_sessions[get_battle_id(username)]["turn"]] == username \
-            and (len(battle_sessions[get_battle_id(username)]["members"]) >= 2 or
-                 battle_sessions[get_battle_id(username)]["type"] == "pve"):
+    battle_id = get_battle_id(username)
+
+    if battle_sessions[battle_id]["members"][battle_sessions[battle_id]["turn"]] == username \
+            and (len(battle_sessions[battle_id]["members"]) >= 2 or
+                 battle_sessions[battle_id]["type"] == "pve"):
         return True
     return False
 
 def send_message(username, text):
-    from app import console_outputs
-
-    console_outputs[Command.commands.encode_name(username)].append(text)
+    from app import get_console, set_console
+    console = get_console()
+    print(console)
+    console[Command.commands.encode_name(username)].append(text)
+    set_console(console)
 
 
 def create(username, *args):
@@ -181,11 +187,15 @@ def create(username, *args):
     while battle_id in battle_sessions.keys():
         battle_id = random.randint(0, 1000)
 
-    battle_sessions[battle_id] = {"members": [], "type": "pvp" if lobby_type == "pvp" else "pve"}
-    enter(username, battle_id)
+    battle_sessions[battle_id] = {"members": [], "type": "pvp" if lobby_type == "pvp" else "pve", "turn": 0}
+    print(enter(username, battle_id))
 
     if battle_sessions[battle_id]["type"] == "pve":
-        bots[battle_id] = {"dmg": get_battle_stats("melee", username)["dmg"] * 1.2,
+        weapon = get_battle_stats("melee", username)
+        if weapon == -1:
+            weapon = get_battle_stats("range", username)
+
+        bots[battle_id] = {"dmg": weapon["dmg"] * 1.2,
                            "def": get_battle_stats("def", username) * 1.2,
                            "energy": 5,
                            "energy_cost": 2,
@@ -217,7 +227,7 @@ def pve_turn(battle_id):
 def enter(username, *args):
     if len(args) < 1:
         return "No battle id"
-    if not args[0].isdigit():
+    if not str(args[0]).isdigit():
         return "Invalid battle id"
 
     battle_id = int(args[0])
@@ -383,7 +393,9 @@ def battle_pass(username, *args):
 
     energy_regenerated = 5
     Command.commands.edit_user_stats("energy", energy_regenerated, "+", username)
-    send_message(get_enemy(username, get_battle_id(username)), "Your enemy skipped turn")
+
+    if battle_sessions[get_battle_id(username)]["type"] == "pvp":
+        send_message(get_enemy(username, get_battle_id(username)), "Your enemy skipped turn")
     return f"Use successfully regenerated {energy_regenerated} energy"
 
 
