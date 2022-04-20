@@ -803,6 +803,7 @@ def command_equip(username, *args):
 
     item_type = ''
     item_class = None
+    item_strange_name = ''
 
     user_inv = get_items_by_user(username)
     shop_itm = get_shop_items()
@@ -815,6 +816,7 @@ def command_equip(username, *args):
                         return localize("EQUIP_INCORRECT_TYPE", username, args=[key])
                     item_type = key
                     item_class = item
+                    item_strange_name = item.name
 
     if item_class is None:
         return localize("EQUIP_NO_SUCH_ITEM", username)
@@ -834,15 +836,15 @@ def command_equip(username, *args):
                     item = [1, item_type, old_equip]
                     add_item(item, username)
 
-                    item = [-1, item_type, item_name]
+                    item = [-1, item_type, item_strange_name]
                     add_item(item, username)
 
-                    user_equip[item_type][item_sub_type] = item_name
+                    user_equip[item_type][item_sub_type] = item_strange_name
 
                 else:
-                    user_equip[item_type][item_sub_type] = item_name
+                    user_equip[item_type][item_sub_type] = item_strange_name
 
-                    item = [-1, item_type, item_name]
+                    item = [-1, item_type, item_strange_name]
                     add_item(item, username)
 
 
@@ -857,9 +859,9 @@ def command_equip(username, *args):
                         item_old = [user_equip[item_type][0], "ItemHeal", user_equip[item_type][1]]
                         add_item(item_old, username)
 
-                        user_equip[item_type] = [item[0], item_name]
+                        user_equip[item_type] = [item[0], item_strange_name]
                 else:
-                    user_equip[item_type] = [item[0], item_name]
+                    user_equip[item_type] = [item[0], item_strange_name]
 
                 item[0] = -item[0]
                 add_item(item, username)
@@ -874,7 +876,7 @@ def command_equip(username, *args):
                             item = [1, key, item.name]
                             add_item(item, username)
 
-        user_equip[item_type] = item_name
+        user_equip[item_type] = item_strange_name
 
         for item in user_inv:
             if item_name == localize(item[2], username):
