@@ -84,7 +84,8 @@ def chat():
 
     if not update:
         textIn = request.form["commandInput"]
-        dct["user_chats_outputs"][chat_name].append(f"{sender} >>> {textIn}")
+        if textIn not in ["", " ", "  "]:
+            dct["user_chats_outputs"][chat_name].append(f"{sender} >>> {textIn}")
 
     if chat_name not in dct["user_chats_outputs"].keys():
         dct["user_chats_outputs"][chat_name] = []
