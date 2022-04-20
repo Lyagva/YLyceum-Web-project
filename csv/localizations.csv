@@ -69,26 +69,39 @@ BUY_SUSSESS;Successfully bought {} "{}"(-s) for {} money
 BUY_NO_ITEM_FOUND;Can't find "{}" in shops
 ;
 ;
-ITEM_ARMOR_DEBUG_NAME;Debug armor
-ITEM_ARMOR_DEBUG_DESC;Debug armor desc
+ITEM_DNA;DNA sample
+ITEM_DNA_DESC;DNA sample taken from frogs
 ;
+MELEE_RUSTY;Old rusty knife
+MELEE_RUSTY_DESC;Old rusty knife that my grandfather was using 100 years ago
+MELEE_WARKNIFE;Old army knife
+MELEE_WARKNIFE_DESC;Better version of rusty knife
 ;
-ITEM_HEAL_DEBUG_NAME;Debug heal
-ITEM_HEAL_DEBUG_DESC;Debug heal desc
-ITEM_HEAL_LOW_NAME;Small medkit
-ITEM_HEAL_LOW_DESC;Heals by small amount of hp
+RANGE_FLINT;Flint pistol
+RANGE_FLINT_DESC;It shoots flint pieces. Very. Bad. Weapon
+RANGE_8MM;8mm pistol
+RANGE_8MM_DESC;Modern 8mm pistol
 ;
+ITEM_SMALL_MEDKIT;Small medkit
+ITEM_SMALL_MEDKIT_DESC;Heals small amount of hp
+ITEM_MEDIUM_MEDKIT;Medium medkit
+ITEM_MEDIUM_MEDKIT_DESC;Heals medium amount of hp
+ITEM_LARGE_MEDKIT;Large medkit
+ITEM_LARGE_MEDKIT_DESC;Heals large amount of hp
 ;
-ITEM_MATERIAL_DEBUG_NAME;Debug material
-ITEM_MATERIAL_DEBUG_DESC;Debug material desc
+ITEM_CLOTH_TORSO;Fabric hat
+ITEM_CLOTH_TORSO_DESC;Just a fabric hat
+ITEM_JACKET;Jacket
+ITEM_JACKET_DESC;Looks cool
+ITEM_SNEAKERS;Sneakers
+ITEM_SNEAKERS_DESC;Looks even cooler than jacket
+ITEM_PINK_JEANS;Pink jeans
+ITEM_PINK_JEANS_DESC;Strange color
+ITEM_IRON_HELMET;Iron helmet
+ITEM_IRON_HELMET_DESC;Look like bowl
+ITEM_BIKE_GLOVES;Bike gloves
+ITEM_BIKE_GLOVES_DESC;Cool gloves used by bikers
 ;
-;
-ITEM_MELEE_WEAPON_DEBUG_NAME;Debug melee
-ITEM_MELEE_WEAPON_DEBUG_DESC;Debug melee desc
-;
-;
-ITEM_RANGE_WEAPON_DEBUG_NAME;Debug range
-ITEM_RANGE_WEAPON_DEBUG_DESC;Debug range desc
 ;
 CHAT_NO_FUNC;No function provided
 CHAT_INVALID_FUNC;"Available function arguments: add, remove"

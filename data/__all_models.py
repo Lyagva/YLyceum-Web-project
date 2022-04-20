@@ -18,12 +18,12 @@ class UsersParams(SqlAlchemyBase):
         "energy": 5,  # базовое кол-во действий за ход
         "defence": 5,  # базовая защита
         "attack": 5,  # базовый урон в ближнем бою
-        "acc": 5,  # базовая точность %. 0.05 при расчётах
     }
     stats = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_stats))
 
     # [count, durability, table, itemName]
-    default_items = {"items": [[1, "ItemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
+    # default_items = {"items": [[1, "ItemMaterial", "ITEM_MATERIAL_DEBUG_NAME"]]}
+    default_items = {"items": []}
     items = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_items))
     battle_id = sqlalchemy.Column(sqlalchemy.Integer, default=-1)
 
