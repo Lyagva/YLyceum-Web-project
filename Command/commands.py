@@ -97,7 +97,7 @@ def get_all_langs():
     from csv import reader
 
     # log.debug("Opening and reading localizations file")
-    with open('csv/localizations.csv', encoding="utf8") as csvfile:
+    with open('csv/localizations.csv') as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
         data = list(map(lambda x: x, reader)) # Storing data to list
 

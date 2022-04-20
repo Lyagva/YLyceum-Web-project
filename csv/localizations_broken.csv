@@ -1,0 +1,137 @@
+CODE;EN;RU
+HELP_HEADER;name ~t syntax ~t description ~n;Iacaaiea ~t neioaenen ~t iienaiea ~n
+HELP_FORMAT;{} ~t {} ~t {} ~n;{} ~t {} ~t {} ~n
+HELP_HELP;Prints help message equal to this;Auaiaeo yoi niiauaiea
+HELP_DEBUG;Just a debug command for testers;Eniieucoaony a?aaieie iaaaie aey oanoia
+HELP_LOGIN;Used to login into account or create new one;Eniieucoaony aey aoiaa ee nicaaiey aeeaoioa
+HELP_CLEAR;Clears all console outputs;I?euaao eiinieu
+HELP_LANG;Changes current language. To get all languages use "lang";Iaiyao ycue. Aey iieo?aiey nienea ycueia eniieucoeoa "lang"
+HELP_EMAIL;Adds mail to your account;I?eaycuaaao ii?oo e aeeaoioo
+HELP_STATUS;Displays the player's status. Use "self" as name to show your status;Auaiaeo noaoon ea?iea. Anee eiy ia oeacaii - auaaaao aaoa eiy
+HELP_PASSWORD_RECOVERY;Send the password to the username email;Ioi?aaeyao ienuii aey ainnoaiiaeaiey ia?iey
+HELP_WIKI;Shows wiki about the game. To get more information use "wiki";Auaiaeo nienie anao i?aaiaoia. Eniieucoeoa "wiki"
+HELP_INV;Shows your inventory;Iieacuaaao aao eiaaioa?u
+HELP_SELL;Used for dropping items;Iicaieyao i?iaaaaou aaue
+HELP_BUY;Used for acquire items;Iicaieyao iieoiaou aaue
+HELP_CHAT;Use "chat add <username>" to add chat with player. Use "chat remove <username>" to remove chat with player;"""chat add <eiy>"" - aiaaeyao ee?iue ?ao. ""chat remove <eiy>"" - oae?aao."
+HELP_EQUIP;"Use ""equip <item_name>"" where ""item name"" type is armor, weapon or heal to equip your person";Iicaieyao yeeie?iauaaou aaue
+;;
+;;
+LOGIN_NO_NAME;No username provided;Ia oeacaii eiy
+LOGIN_NO_PASSWORD;No password provided;Ia oeacai ia?ieu
+LOGIN_INCORRECT_PASSWORD;The name "{}" is busy or the password is incorrect;Eiy "{}" caiyoi eee aaaa?i iaaa?iue ia?ieu
+LOGIN_INCORRECT_TYPE;"Incorrect login. Use also lowercase English letters, numbers, symbols ""_"" and ""-""";"Iaaa?iue eiaei. Eniieucoeoa iaeaiueea Aiaeeeneea aoeau, oeo?u e neaieu ""_"" e ""-"""
+LOGIN_SUCCESS;You successfully logged to "{}";Au oniaoii aioee a aeeaoio "{}"
+LOGIN_NEW_ACC_SUCCESS;You successfully created new account with name "{}". Don't lose your password!;Au oniaoii nicaaee aeeaoio "{}". Ia caaoauoa naie ia?ieu
+LOGIN_INCORRECT_NAME;"This name can't be used. Please, enter other name";Yoi eiy ia ii?ao auou eniieuciaaii. Aaaaeoa a?oaia eiy
+;;
+LANG_NO_LANG;No language provided~nAll available languages: {};Ia oeacai ycue.~nAna ycuee: {}
+LANG_INCORRECT;Incorrect language "{}"~nView all languages using "lang";Iaaa?ii oeacai ycue.~nAna ycuee: {}
+LANG_SUCCESS;Successfully changed account language to "{}";?cue aue oniaoii niaiai
+;;
+STATUS_NO_USER;Expected username;Ia oeacaii eiy
+STATUS_NO_USER_IN_BD;The "{}" does not exist;Iieuciaaoaey "{}" ia nouanoaoao
+;;
+EMAIL_NO_FOUND;Exepected email;Ia oeacai aa?an ii?ou
+EMAIL_NO_LOGGED;You are not registered;Au ia a aeeaoioa
+EMAIL_ADD_SUCCESS;Added email "{}" to user "{}";Aiaaaeai aa?an ii?ou "{}" e iieuciaaoae? "{}"
+;;
+PASSWORD_RECOVERY_NO_USERNAME;No username provided;Ia oeacaii eiy
+PASSWORD_RECOVERY_NO_USER_IN_DB;The "{}" does not exist;Iieuciaaoaey "{}" ia nouanoaoao
+PASSWORD_RECOVERY_NO_USER_EMAIL;The "{}" does not have mail;O iieuciaaoaey "{}" ia i?eaycaia ii?oa
+PASSWORD_RECOVERY_SUCCESS_SEND_MAIL;Successfully sent email to "{}";Oniaoii ioi?aaeai ia?ieu ia aa?an "{}"
+PASSWORD_RECOVERY_EMAIL_NOT_VALID;The recipient address "{}" is not a valid RFC-5321 address.;Oeacaiue aa?an ia iiaoiaeo aey nenoaiu aaoi-ioi?aaee
+;;
+WIKI_HELP;"Available arguments: all, armor, heal, material, melee, range";"Ainooiiua a?aoiaiou: all, armor, heal, material, melee, range"
+WIKI_INCORRECT_CATEGORY;Incorrect category. Use "wiki" to get all categories;Iaaa?ii oeacaia eaoaai?ey. Eniieucoeoa "wiki" ?oiau iieo?eou nienie anao eaoaai?ee
+WIKI_AMMO_FORMAT;{} ~t {} ~t {} ~n;{} ~t {} ~t {} ~n
+WIKI_ARMOR_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~n;{} ~t {} ~t {} ~t {} ~t {} ~n
+WIKI_HEAL_FORMAT;{} ~t {} ~t {} ~t {} ~n;{} ~t {} ~t {} ~t {} ~n
+WIKI_MATERIAL_FORMAT;{} ~t {} ~t {} ~n;{} ~t {} ~t {} ~n
+WIKI_MELEE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~n;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
+WIKI_RANGE_FORMAT;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n;{} ~t {} ~t {} ~t {} ~t {} ~t {} ~t {} ~n
+;;
+SELL_NO_ITEM_PROVIDED;No item name provided;Ia oeacai i?aaiao
+SELL_INVALID_COUNT;Please re-enter count;Aaaaeoa eiee?anoi caiiai
+SELL_SUCCESS;Successfully sold {} "{}"(-s) for {} money;Oniaoii i?iaaii {} "{}" ca {} aaiaa
+SELL_NO_ITEM_FOUND;Can't find "{}" in your inventory;Ia oaa?ony iaeoe "{}" a aaoai eiaaioa?a
+;;
+BUY_NO_ITEM_PROVIDED;No item name provided;Ia oeacai i?aaiao
+BUY_INVALID_COUNT;Please re-enter count;Aaaaeoa eiee?anoi caiiai
+BUY_NO_MONEY;You have no money;Iaainoaoi?ii aaiaa
+BUY_SUSSESS;Successfully bought {} "{}"(-s) for {} money;Oniaoii eoieaii {} "{}" ca {} aaiaa
+BUY_NO_ITEM_FOUND;Can't find "{}" in shops;Ia oaa?ony iaeoe "{}" a iaaaceia
+;;
+;;
+ITEM_ARMOR_DEBUG_NAME;Debug armor;Oanoiaay a?iiy
+ITEM_ARMOR_DEBUG_DESC;Debug armor desc;Iienaiea oanoiaie a?iie
+;;
+;;
+ITEM_HEAL_DEBUG_NAME;Debug heal;Oanoiaay aioa?ea
+ITEM_HEAL_DEBUG_DESC;Debug heal desc;Iienaiea aioa?ee
+ITEM_HEAL_LOW_NAME;Low heal;Iaeay aioa?ea
+ITEM_HEAL_LOW_DESC;Low heal desc;Ea?eo iaiiiai cai?iauy
+;;
+;;
+ITEM_MATERIAL_DEBUG_NAME;Debug material;Oanoiaue iaoa?eae
+ITEM_MATERIAL_DEBUG_DESC;Debug material desc;Iienaiea oanoiaiai iaoa?eaea
+;;
+;;
+ITEM_MELEE_WEAPON_DEBUG_NAME;Debug melee;Oanoiaia i?o?ea aee?iaai aiy
+ITEM_MELEE_WEAPON_DEBUG_DESC;Debug melee desc;Iienaiea oanoiaiai i?o?ey aee?iaai aiy
+;;
+;;Oanoiaia i?o?ea aaeuiaai aiy
+ITEM_RANGE_WEAPON_DEBUG_NAME;Debug range;Iienaiea oanoiaiai i?o?ey aaeuiaai aiy
+ITEM_RANGE_WEAPON_DEBUG_DESC;Debug range desc;
+;;
+CHAT_NO_FUNC;No function provided;Ia oeacaia ooieoey
+CHAT_INVALID_FUNC;"Available function arguments: add, remove";"Ainooiiua ooieoee: add, remove"
+CHAT_NO_NAME;No name provided;Ia oeacaii eiy
+CHAT_ADD_INVALID_NAME;User not found;Ia iaeaai iieuciaaoaeu
+CHAT_ADD_ALREADY;You already have this chat;?ao o?a nouanoaoao
+CHAT_ADD_SUCCESS;Successfully added chat with user "{}";Oniaoii nicaai ?ao n iieuuiaaoaeai "{}"
+CHAT_REMOVE_INVALID_NAME;No chat with user "{}";?ao "{}" ia nouanoaoao
+CHAT_REMOVE_SUCCESS;Successfully removed chat with user "{}";Oniaoii oaae?i ?ao n iieuuiaaoaeai "{}"
+;;
+;;
+USER_NOT_FOUND;You have not logged;Au ia a aeeaoioa
+EQUIP_NO_ITEM;No item provided;Ia oeacaii eiy
+EQUIP_INCORRECT_TYPE;Type "{}" not subject to equipment;Iaaicii?ii yeaie?iaaou i?aaiao oeia "{}"
+EQUIP_NO_SUCH_ITEM;The item does not exist;Ia iaeaao i?aaiao
+EQUIP_NO_IN_INV;No such item in inventory;Ia iaeaai i?aaiao a aaoai eiaaioa?a
+EQUIP_SUCCESS;Successfully equip item;I?aaiao oniaoii yeeie?iaai
+;;
+BTL_CREATE_NO_TYPE;No lobby type provided;Ia oeacai oei eiaae
+BTL_CREATE_SUCCESS;Created lobby {} with {} type. You already in;Oniaoii nicaaii {} eiaae iiia? {}. Au o?a caoee
+;;
+BTL_ENTER_NO_ID;No battle id;Ia oeacai iiia? eiaae
+BTL_ENTER_INVALID_ID;Invalid battle id;Ia oaa?ony iaeoe eiaae
+BTL_ENTER_SUCCESS;You entered battle {};Au aioee a eiaae iiia? {}
+;;
+BTL_ESC_NOT_TURN;It's not your turn!;Ia aao oia!
+BTL_ESC_TO_ENEMY;Your enemy escaped from battle;Aao i?ioeaiee naa?ae ec aiy
+BTL_ESC_SUCCESS;You successfully escaped battle;Au naa?aee ec aiy
+BTL_ESC_UNSUCCESS;You can't escape battle;O aan ia auoei naa?aou ec aiy
+;;
+BTL_ATK_NOT_TURN;It's not your turn!;Ia aao oia!
+BTL_ATK_SKIP_TO_ENEMY;Your enemy skipped turn;Aao i?ioeaiee i?iionoee oia
+BTL_ATK_ENEMY_ATK;Your enemy attacked you by {} HP;Aao i?ioeaiee aoaeiaae aan ia {} cai?iauy
+BTL_ATK_NO_TYPE;No attack type provided. Use 'melee' or 'range';Ia oeacai oei aoaee. Eniieucaeoa "melee" eee "range"
+BTL_ATK_INVALID_TYPE;Invalid attack type;Iaaa?iue oei aoaee
+BTL_ATK_NO_WEAP;No weapon;Iao i?o?ey
+BTL_ATK_LESS_ENG;You have less energy than needed. Needed: {};Iaainoaoi?ii yia?aee. Io?ii {}
+BTL_ATK_SUCCESS_ATK;Successfully attacked enemy by {} HP;Au aoaeiaaee ia {} cai?iauy
+BTL_ATK_UNSUCCESS_ATK;You didn't hit enemy;Au ia iiiaee ii i?ioeaieeo
+;;
+BTL_HEAL_NOT_TURN;It's not your turn!;Ia aao oia!
+BTL_HEAL_ERR;Error while healing;Ia oaaeinu ainnoaiiaeou cai?iaua
+BTL_HEAL_SUCC_TO_ENEM;Your enemy successfully healed by {} HP;Aao i?ioeaiee ainnoaiiaee {} cai?iauy
+BTL_HEAL_SUCC;You successfully healed by {} HP. Your HP - {};Au ainnoaiiaeee {} cai?iauy. Nae?an o aan - {}
+;;
+BTL_PASS_NOT_TURN;It's not your turn!;Ia aao oia!
+BTL_PASS_SKIP_TO_ENEM;Your enemy skipped turn;Aao i?ioeaiee i?iionoee oia
+BTL_PASS_REGEN;You successfully regenerated {} energy;Au ainnoaiiaeee {} yia?aee
+;;
+BTL_BOT_ATK;Enemy bot hit you by {} HP;Aio iai?n aai {} o?iia
+;;
+BTL_BOT_PASS;Enemy bot regenerated 5 energy;Aio ainnoaiiaee 5 yia?aee
