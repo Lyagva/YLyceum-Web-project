@@ -180,13 +180,12 @@ def send_message(username, text):
 
     dct = get_vars().copy()
     dct["console_outputs"][Command.commands.encode_name(username)].append(text)
-    print("Send msg", dct)
     set_vars(dct)
 
 
 def create(username, *args):
     if len(args) < 1:
-        return "No lobby type provided"
+        return Command.commands.localize("BTL_CREATE_NO_TYPE", username)
 
     lobby_type = args[0]
 
@@ -211,7 +210,7 @@ def create(username, *args):
                            "hp": 100}
         bots[battle_id]["money"] = bots[battle_id]["dmg"] * bots[battle_id]["def"]
 
-    return f"Created lobby {battle_id} with {battle_sessions[battle_id]['type']} type. You already in."
+    return Command.commands.localize("BTL_CREATE_SUCCESS", username, args=[battle_id, battle_sessions[battle_id]['type']])
 
 
 def turn(battle_id):
@@ -234,9 +233,9 @@ def pve_turn(battle_id):
 
 def enter(username, *args):
     if len(args) < 1:
-        return "No battle id"
+        return Command.commands.localize("BTL_ENTER_NO_ID", username)
     if not str(args[0]).isdigit():
-        return "Invalid battle id"
+        return Command.commands.localize("BTL_ENTER_INVALID_ID", username)
 
     battle_id = int(args[0])
     set_battle_id(username, battle_id)
@@ -245,7 +244,7 @@ def enter(username, *args):
         battle_sessions[battle_id] = base_session
     battle_sessions[battle_id]["members"].append(username)
 
-    return f"You entered battle {battle_id}"
+    return Command.commands.localize("BTL_ENTER_SUCCESS", username, args=[battle_id])
 
 
 def leave(username):
@@ -259,24 +258,24 @@ def leave(username):
 
 def escape(username):
     if not turn_check(username):
-        return "It's not your turn!"
+        return Command.commands.localize("BTL_ESC_NOT_TURN", username)
 
     chance = random.random() * 100
 
     if chance > 50:
         if battle_sessions[get_battle_id(username)]["type"] == "pvp":
-            send_message(get_enemy(username, get_battle_id(username)), "Your enemy escaped from battle")
+            send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_ESC_TO_ENEMY", get_enemy(username, get_battle_id(username))))
 
         leave(username)
 
-        return "You successfully escaped battle"
+        return Command.commands.localize("BTL_ESC_SUCCESS", username)
     turn(get_battle_id(username))
-    return "You can't escape battle"
+    return Command.commands.localize("BTL_ESC_UNSUCCESS", username)
 
 
 def attack(username, *args):
     if not turn_check(username):
-        return "It's not your turn!"
+        return Command.commands.localize("BTL_ATK_NOT_TURN", username)
 
     battle_id = get_battle_id(username)
     turn(battle_id)
@@ -286,26 +285,26 @@ def attack(username, *args):
     if lobby_type == "pvp":
         enemy = get_enemy(username, battle_id)
         if len(args) < 1:
-            send_message(enemy, "Your enemy skipped turn")
-            return "No attack type provided. Use 'melee' or 'range'"
+            send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
+            return Command.commands.localize("BTL_ATK_NO_TYPE", username)
         attack_type = args[0]
 
         if attack_type == "melee":
-            send_message(enemy, "Your enemy skipped turn")
+            send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
             weapon = get_battle_stats("melee", username)
         elif attack_type == "range":
-            send_message(enemy, "Your enemy skipped turn")
+            send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
             weapon = get_battle_stats("range", username)
         else:
-            send_message(enemy, "Your enemy skipped turn")
-            return "Invalid attack type"
+            send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
+            return Command.commands.localize("BTL_ATK_INVALID_TYPE", username)
         if weapon == {}:
-            send_message(enemy, "Your enemy skipped turn")
-            return "No weapon"
+            send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
+            return Command.commands.localize("BTL_ATK_NO_WEAP", username)
 
         if get_battle_stats("eng", username) < weapon["eng"]:
-            send_message(enemy, "Your enemy skipped turn")
-            return "You have less energy than needed. Needed: " + str(weapon["eng"] - get_battle_stats("eng", username))
+            send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
+            return Command.commands.localize("BTL_ATK_LESS_ENG", username, args=[str(weapon["eng"] - get_battle_stats("eng", username))])
 
         Command.commands.edit_user_stats("energy", -weapon["eng"], "+", username)
 
@@ -315,7 +314,7 @@ def attack(username, *args):
             dmg /= get_battle_stats("def", enemy)
             Command.commands.edit_user_stats("hp", -dmg, "+", enemy)
 
-            send_message(enemy, f"Your enemy attacked you by {dmg} HP")
+            send_message(enemy, Command.commands.localize("BTL_ATK_ENEMY_ATK", enemy, args=[dmg]))
 
             result = death_check(battle_id)
             if result:
@@ -330,12 +329,12 @@ def attack(username, *args):
                 leave(username)
                 leave(enemy)
 
-            return "Successfully attacked enemy by " + str(dmg) + "HP"
-        send_message(enemy, "Your enemy skipped turn")
-        return "You didn't hit enemy"
+            return Command.commands.localize("BTL_ATK_SUCCESS_ATK", username, args=[str(dmg)])
+        send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
+        return Command.commands.localize("BTL_ATK_UNSUCCESS_ATK", username)
 
     if len(args) < 1:
-        return "No attack type provided. Use 'melee' or 'range'"
+        return Command.commands.localize("BTL_ATK_NO_TYPE", username)
     attack_type = args[0]
 
     if attack_type == "melee":
@@ -343,12 +342,13 @@ def attack(username, *args):
     elif attack_type == "range":
         weapon = get_battle_stats("range", username)
     else:
-        return "Invalid attack type"
+        return Command.commands.localize("BTL_ATK_INVALID_TYPE", username)
     if weapon == {}:
-        return "No weapon"
+        return Command.commands.localize("BTL_ATK_NO_WEAP", username)
 
     if get_battle_stats("eng", username) < weapon["eng"]:
-        return "You have less energy than needed. Needed: " + str(weapon["eng"] - get_battle_stats("eng", username))
+        return Command.commands.localize("BTL_ATK_LESS_ENG", username,
+                                         args=[str(weapon["eng"] - get_battle_stats("eng", username))])
 
     Command.commands.edit_user_stats("energy", -weapon["eng"], "+", username)
 
@@ -368,20 +368,20 @@ def attack(username, *args):
 
             leave(username)
 
-        return "Successfully attacked enemy by " + str(dmg) + "HP"
-    return "You didn't hit enemy"
+        return Command.commands.localize("BTL_ATK_SUCCESS_ATK", username, args=[str(dmg)])
+    return Command.commands.localize("BTL_ATK_UNSUCCESS_ATK", username)
 
 
 def heal(username, *args):
     if not turn_check(username):
-        return "It's not your turn!"
+        return Command.commands.localize("BTL_HEAL_NOT_TURN", username)
     turn(get_battle_id(username))
 
     heal_amount = get_battle_stats("ha", username)
 
     if heal_amount == -1:
         send_message(get_enemy(username, get_battle_id(username)), "Your enemy skipped turn")
-        return "Error while healing"
+        return Command.commands.localize("BTL_HEAL_ERR", username)
 
     Command.commands.edit_user_stats("hp", heal_amount, "+", username)
 
@@ -389,23 +389,22 @@ def heal(username, *args):
         heal_amount = 100 - heal_amount
         Command.commands.edit_user_stats("hp", 100, "=", username)
 
-    send_message(get_enemy(username, get_battle_id(username)), f"Your enemy successfully healed by {heal_amount} HP")
+    send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_HEAL_SUCC_TO_ENEM", get_enemy(username, get_battle_id(username)), args=[heal_amount]))
 
-    return "You successfully healed by " + str(heal_amount) + \
-           "HP. Your HP - " + str(Command.commands.get_user_params(username)["hp"])
+    return Command.commands.localize("BTL_HEAL_SUCC", username, args=[str(heal_amount), str(Command.commands.get_user_params(username)["hp"])])
 
 
 def battle_pass(username, *args):
     if not turn_check(username):
-        return "It's not your turn!"
+        return Command.commands.localize("BTL_PASS_NOT_TURN", username)
     turn(get_battle_id(username))
 
     energy_regenerated = 5
     Command.commands.edit_user_stats("energy", energy_regenerated, "+", username)
 
     if battle_sessions[get_battle_id(username)]["type"] == "pvp":
-        send_message(get_enemy(username, get_battle_id(username)), "Your enemy skipped turn")
-    return f"Use successfully regenerated {energy_regenerated} energy"
+        send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_PASS_SKIP_TO_ENEM", get_enemy(username, get_battle_id(username))))
+    return Command.commands.localize("BTL_PASS_REGEN", username, args=[energy_regenerated])
 
 
 def bot_attack(battle_id):
@@ -416,7 +415,7 @@ def bot_attack(battle_id):
 
     Command.commands.edit_user_stats("hp", -dmg, "+", username)
 
-    send_message(username, f"Enemy bot hit you by {dmg} HP")
+    send_message(username, Command.commands.localize("BTL_BOT_ATK", username, args=[dmg]))
 
 
 def bot_pass(battle_id):
@@ -424,7 +423,7 @@ def bot_pass(battle_id):
 
     bot["energy"] += 5
 
-    send_message(battle_sessions[battle_id]["members"][0], "Enemy bot regenerated 5 energy")
+    send_message(battle_sessions[battle_id]["members"][0], Command.commands.localize("BTL_BOT_PASS", battle_sessions[battle_id]["members"][0]))
 
 
 def death_check(battle_id):

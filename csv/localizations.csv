@@ -105,3 +105,38 @@ EQUIP_INCORRECT_TYPE;Type "{}" not subject to equipment
 EQUIP_NO_SUCH_ITEM;The item does not exist
 EQUIP_NO_IN_INV;No such item in inventory
 EQUIP_SUCCESS;Successfully equip item
+;
+BTL_CREATE_NO_TYPE;No lobby type provided
+BTL_CREATE_SUCCESS;Created lobby {} with {} type. You already in.
+;
+BTL_ENTER_NO_ID;No battle id
+BTL_ENTER_INVALID_ID;Invalid battle id
+BTL_ENTER_SUCCESS;You entered battle {}
+;
+BTL_ESC_NOT_TURN;It's not your turn!
+BTL_ESC_TO_ENEMY;Your enemy escaped from battle
+BTL_ESC_SUCCESS;You successfully escaped battle
+BTL_ESC_UNSUCCESS;You can't escape battle
+;
+BTL_ATK_NOT_TURN;It's not your turn!
+BTL_ATK_SKIP_TO_ENEMY;Your enemy skipped turn
+BTL_ATK_ENEMY_ATK;Your enemy attacked you by {} HP
+BTL_ATK_NO_TYPE;No attack type provided. Use 'melee' or 'range'
+BTL_ATK_INVALID_TYPE;Invalid attack type
+BTL_ATK_NO_WEAP;No weapon
+BTL_ATK_LESS_ENG;You have less energy than needed. Needed: {}
+BTL_ATK_SUCCESS_ATK;Successfully attacked enemy by {} HP
+BTL_ATK_UNSUCCESS_ATK;You didn't hit enemy
+;
+BTL_HEAL_NOT_TURN;It's not your turn!
+BTL_HEAL_ERR;Error while healing
+BTL_HEAL_SUCC_TO_ENEM;Your enemy successfully healed by {} HP
+BTL_HEAL_SUCC;You successfully healed by {} HP. Your HP - {}
+;
+BTL_PASS_NOT_TURN;It's not your turn!
+BTL_PASS_SKIP_TO_ENEM;Your enemy skipped turn
+BTL_PASS_REGEN;You successfully regenerated {} energy
+;
+BTL_BOT_ATK;Enemy bot hit you by {} HP
+;
+BTL_BOT_PASS;Enemy bot regenerated 5 energy
