@@ -365,11 +365,11 @@ def command_status(username, *args):
         if type(val) == dict:
             return_data.append(f"{key}")
             for k, v in val.items():
-                return_data.append(f"\t{k}: {v}")
+                return_data.append(f"\t{k}: {localize(v, username)}")
         elif type(val) == list:
-            return_data.append(f"{key}: {val[0]} of {val[1]}")
+            return_data.append(f"{key}: {val[0]} of {localize(val[1], username)}")
         else:
-            return_data.append(f'{key}: {val}')
+            return_data.append(f'{key}: {localize(val, username)}')
 
     # log.debug(f"[Command status {username}] Returning user params")
     return '\n'.join(return_data)

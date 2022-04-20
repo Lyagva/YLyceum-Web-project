@@ -89,8 +89,8 @@ ITEM_MEDIUM_MEDKIT_DESC;Heals medium amount of hp
 ITEM_LARGE_MEDKIT;Large medkit
 ITEM_LARGE_MEDKIT_DESC;Heals large amount of hp
 ;
-ITEM_CLOTH_TORSO;Fabric hat
-ITEM_CLOTH_TORSO_DESC;Just a fabric hat
+ITEM_CLOTH_TORSO;Fabric T-shirt
+ITEM_CLOTH_TORSO_DESC;Just a fabric T-shirt
 ITEM_JACKET;Jacket
 ITEM_JACKET_DESC;Looks cool
 ITEM_SNEAKERS;Sneakers

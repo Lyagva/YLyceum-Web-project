@@ -18,7 +18,6 @@ class UsersParams(SqlAlchemyBase):
         "energy": 5,  # базовое кол-во действий за ход
         "defence": 5,  # базовая защита
         "attack": 5,  # базовый урон в ближнем бою
-        "acc": 5,  # базовая точность %. 0.05 при расчётах
     }
     stats = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_stats))
 

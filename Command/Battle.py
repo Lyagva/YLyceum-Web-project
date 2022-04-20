@@ -76,21 +76,16 @@ def get_heal_amount(username):
         return -1
 
     heal_name = equipment["ItemHeal"][1]
+    heal = db_sess.query(__all_models.ItemHeal).get(heal_name)
 
-    heals = db_sess.query(__all_models.ItemHeal).all()
+    if heal is None:
+        return -1
 
-    heal_amount = -1
-    for item in heals:
-        if Command.commands.localize(item.name, username) == heal_name:
-            heal_amount = item.healAmount
-            equipment["ItemHeal"][0] -= 1
-            user_params.equipment = json.dumps(equipment)
-            break
+    heal_amount = heal.healAmount
+    equipment["ItemHeal"][0] -= 1
+    user_params.equipment = json.dumps(equipment)
 
     db_sess.commit()
-
-    if heal_amount == -1:
-        return -1
 
     return heal_amount
 
@@ -104,18 +99,12 @@ def get_melee(username):
         return -1
 
     weapon_name = equipment["ItemMeleeWeapon"]
-    weapons = db_sess.query(__all_models.ItemMeleeWeapon).all()
+    weapon = db_sess.query(__all_models.ItemMeleeWeapon).get(weapon_name)
 
-    output = {}
-    for item in weapons:
-        if Command.commands.localize(item.name, username) == weapon_name:
-            output = {"dmg": item.damage, "eng": item.energyCost, "prc": item.piercing, "ch": 100}
-            break
+    if weapon is None:
+        return -1
 
-    db_sess.commit()
-
-    if output == {}:
-        return {}
+    output = {"dmg": weapon.damage, "eng": weapon.energyCost, "prc": weapon.piercing, "ch": 100}
     return output
 
 def get_range(username):
@@ -128,18 +117,12 @@ def get_range(username):
         return -1
 
     weapon_name = equipment["ItemRangeWeapon"]
-    weapons = db_sess.query(__all_models.ItemRangeWeapon).all()
+    weapon = db_sess.query(__all_models.ItemRangeWeapon).get(weapon_name)
 
-    output = -1
-    for item in weapons:
-        if Command.commands.localize(item.name, username) == weapon_name:
-            output = {"dmg": item.damage, "eng": item.energyCost, "prc": item.piercing, "ch": item.hitChance}
-            break
+    if weapon is None:
+        return -1
 
-    db_sess.commit()
-
-    if output == -1:
-        return {}
+    output = {"dmg": weapon.damage, "eng": weapon.energyCost, "prc": weapon.piercing, "ch": weapon.hitChance}
     return output
 
 def get_defence(username):
@@ -194,7 +177,7 @@ def create(username, *args):
         battle_id = random.randint(0, 1000)
 
     battle_sessions[battle_id] = {"members": [], "type": "pvp" if lobby_type == "pvp" else "pve", "turn": 0}
-    print(enter(username, battle_id))
+    enter(username, battle_id)
 
     if battle_sessions[battle_id]["type"] == "pve":
         weapon = get_battle_stats("melee", username)
@@ -202,6 +185,7 @@ def create(username, *args):
             weapon = get_battle_stats("range", username)
         if weapon == -1:
             weapon = {"dmg": 1}
+        print(weapon)
 
         bots[battle_id] = {"dmg": weapon["dmg"] * 1.2,
                            "def": get_battle_stats("def", username) * 1.2,
@@ -244,7 +228,7 @@ def enter(username, *args):
         battle_sessions[battle_id] = base_session
     battle_sessions[battle_id]["members"].append(username)
 
-    return Command.commands.localize("BTL_ENTER_SUCCESS", username, args=[battle_id])
+    send_message(username, Command.commands.localize("BTL_ENTER_SUCCESS", username, args=[battle_id]))
 
 
 def leave(username):
@@ -254,6 +238,7 @@ def leave(username):
         battle_sessions.pop(battle_id)
 
     set_battle_id(username, -1)
+    restore(username)
 
 
 def escape(username):
@@ -265,8 +250,10 @@ def escape(username):
     if chance > 50:
         if battle_sessions[get_battle_id(username)]["type"] == "pvp":
             send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_ESC_TO_ENEMY", get_enemy(username, get_battle_id(username))))
+            leave(get_enemy(username, get_battle_id(username)))
 
         leave(username)
+
 
         return Command.commands.localize("BTL_ESC_SUCCESS", username)
     turn(get_battle_id(username))
@@ -308,11 +295,11 @@ def attack(username, *args):
 
         Command.commands.edit_user_stats("energy", -weapon["eng"], "+", username)
 
-        dmg = weapon["dmg"] ** 0.5 + Command.commands.get_user_params(username)["attack"]
+        dmg = weapon["dmg"] + Command.commands.get_user_params(username)["attack"]
 
         if random.randint(0, 100) <= round(dmg * weapon["prc"] * weapon["ch"] / get_battle_stats("def", enemy) / 100):
             dmg /= get_battle_stats("def", enemy)
-            Command.commands.edit_user_stats("hp", -dmg, "+", enemy)
+            Command.commands.edit_user_stats("hp", round(-dmg), "+", enemy)
 
             send_message(enemy, Command.commands.localize("BTL_ATK_ENEMY_ATK", enemy, args=[dmg]))
 
@@ -320,11 +307,11 @@ def attack(username, *args):
             if result:
                 Command.commands.edit_user_stats("money",
                                                  Command.commands.get_user_params(
-                                                     enemy)["money"] / 4,
+                                                     enemy)["money"] // 4,
                                                  "+", username)
                 Command.commands.edit_user_stats("money",
                                                  -Command.commands.get_user_params(
-                                                     enemy)["money"] / 4,
+                                                     enemy)["money"] // 4,
                                                  "+", enemy)
                 leave(username)
                 leave(enemy)
@@ -352,18 +339,18 @@ def attack(username, *args):
 
     Command.commands.edit_user_stats("energy", -weapon["eng"], "+", username)
 
-    dmg = weapon["dmg"] ** 0.5 + Command.commands.get_user_params(username)["attack"]
+    dmg = weapon["dmg"] + Command.commands.get_user_params(username)["attack"]
 
     if random.randint(0, 100) <= \
             round(dmg * weapon["prc"] * weapon["ch"] / bots[battle_id]["def"] / 100):
 
-        bots[battle_id]["hp"] -= dmg
+        bots[battle_id]["hp"] -= round(dmg)
 
         result = death_check(battle_id)
 
         if result:
             Command.commands.edit_user_stats("money",
-                                             bots[battle_id]["money"],
+                                             bots[battle_id]["money"] // 1,
                                              "+", username)
 
             leave(username)
@@ -389,9 +376,13 @@ def heal(username, *args):
         heal_amount = 100 - heal_amount
         Command.commands.edit_user_stats("hp", 100, "=", username)
 
-    send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_HEAL_SUCC_TO_ENEM", get_enemy(username, get_battle_id(username)), args=[heal_amount]))
+    if battle_sessions[get_battle_id(username)]["type"] == "pvp":
+        send_message(get_enemy(username, get_battle_id(username)),
+                     Command.commands.localize("BTL_HEAL_SUCC_TO_ENEM",
+                                               get_enemy(username, get_battle_id(username)), args=[heal_amount]))
 
-    return Command.commands.localize("BTL_HEAL_SUCC", username, args=[str(heal_amount), str(Command.commands.get_user_params(username)["hp"])])
+    return Command.commands.localize("BTL_HEAL_SUCC", username, args=[str(heal_amount),
+                                                                      str(Command.commands.get_user_params(username)["hp"])])
 
 
 def battle_pass(username, *args):
@@ -399,7 +390,7 @@ def battle_pass(username, *args):
         return Command.commands.localize("BTL_PASS_NOT_TURN", username)
     turn(get_battle_id(username))
 
-    energy_regenerated = 5
+    energy_regenerated = 10
     Command.commands.edit_user_stats("energy", energy_regenerated, "+", username)
 
     if battle_sessions[get_battle_id(username)]["type"] == "pvp":
@@ -411,9 +402,9 @@ def bot_attack(battle_id):
     username = battle_sessions[battle_id]["members"][0]
     bot = bots[battle_id]
 
-    dmg = bot["dmg"] / get_battle_stats("def", username)
+    dmg = bot["dmg"] / (get_battle_stats("def", username) ** 0.5)
 
-    Command.commands.edit_user_stats("hp", -dmg, "+", username)
+    Command.commands.edit_user_stats("hp", round(-dmg), "+", username)
 
     send_message(username, Command.commands.localize("BTL_BOT_ATK", username, args=[dmg]))
 
@@ -448,3 +439,8 @@ def death_check(battle_id):
                 send_message(players.copy().remove(player)[0], "You won!")
                 return True
     return False
+
+
+def restore(username):
+    Command.commands.edit_user_stats("energy", 10, "=", username)
+    Command.commands.edit_user_stats("hp", 100, "=", username)
