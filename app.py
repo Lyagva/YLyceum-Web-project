@@ -62,6 +62,9 @@ def index2(name):
     set_vars(dct)
 
     user_friends = get_user_friends(username)
+    
+    if name not in ["global", *user_friends]:
+        return page_not_found(None)
 
     return render_template("index2.html", user_friends=user_friends)
 
