@@ -32,24 +32,24 @@ def set_logger():
     :return:
     """
 
-    if not os.path.exists(os.path.abspath("./logs")): #  Проверяем есть ли директория для логов
-        os.makedirs("./logs") #  Создаём директорию для логов
+    if not os.path.exists(os.path.abspath("./logs")):  # Проверяем есть ли директория для логов
+        os.makedirs("./logs")  # Создаём директорию для логов
 
-    formatter = logging.Formatter('%(levelname)s - %(asctime)s - line %(lineno)d >>> %(message)s') #  Формат сообщения в логах
-    time = datetime.now().strftime("%d-%m-%y--%H-%M-%S") #  Формат времени в имени файла
+    formatter = logging.Formatter(
+        '%(levelname)s - %(asctime)s - line %(lineno)d >>> %(message)s')  # Формат сообщения в логах
+    time = datetime.now().strftime("%d-%m-%y--%H-%M-%S")  # Формат времени в имени файла
 
-    logger = logging.getLogger() #  Создание главного логгера
+    logger = logging.getLogger()  # Создание главного логгера
     logger.setLevel("DEBUG")
 
-    fileHandler = logging.FileHandler(filename=f"logs/log{time}.log") #  Логгера для файлов + указание имени файла
-    fileHandler.setFormatter(formatter) #  Изменение формата записи в файл
-    logger.addHandler(fileHandler) #  Добавление логгера файла в главный логгер
+    fileHandler = logging.FileHandler(filename=f"logs/log{time}.log")  # Логгера для файлов + указание имени файла
+    fileHandler.setFormatter(formatter)  # Изменение формата записи в файл
+    logger.addHandler(fileHandler)  # Добавление логгера файла в главный логгер
 
-    streamHandler = logging.StreamHandler(sys.stdout) #  Логгер для вывода в консоль
-    streamHandler.setFormatter(formatter) #  Изменение формата вывода в консоль
-    logger.addHandler(streamHandler) #  Добавление логгера консоли в главный логгер
+    streamHandler = logging.StreamHandler(sys.stdout)  # Логгер для вывода в консоль
+    streamHandler.setFormatter(formatter)  # Изменение формата вывода в консоль
+    logger.addHandler(streamHandler)  # Добавление логгера консоли в главный логгер
 
-
-    logger.info("Logger is ready!") #  Проверка работы логгера
+    logger.info("Logger is ready!")  # Проверка работы логгера
 
     return logger

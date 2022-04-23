@@ -1,8 +1,6 @@
 import json
-
 import sqlalchemy
 from .db_session import SqlAlchemyBase
-from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # ======== Users ========
@@ -26,7 +24,9 @@ class UsersParams(SqlAlchemyBase):
     items = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_items))
     battle_id = sqlalchemy.Column(sqlalchemy.Integer, default=-1)
 
-    default_equip = {"ItemMeleeWeapon": 'MELEE_RUSTY', "ItemRangeWeapon": 'RANGE_FLINT', "ItemHeal": [10, "ITEM_SMALL_MEDKIT"], "ItemArmor": {"head": '', "torso": 'ITEM_CLOTH_TORSO', "hands": '', "legs": '', "feet": ''}}
+    default_equip = {"ItemMeleeWeapon": 'MELEE_RUSTY', "ItemRangeWeapon": 'RANGE_FLINT',
+                     "ItemHeal": [10, "ITEM_SMALL_MEDKIT"],
+                     "ItemArmor": {"head": '', "torso": 'ITEM_CLOTH_TORSO', "hands": '', "legs": '', "feet": ''}}
     equipment = sqlalchemy.Column(sqlalchemy.JSON, default=json.dumps(default_equip))
 
 
@@ -41,13 +41,6 @@ class Users(SqlAlchemyBase):
     email = sqlalchemy.Column(sqlalchemy.String)
     friends = sqlalchemy.Column(sqlalchemy.String, default="[]")
 
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
-
-
 
 # ======== Commands ========
 
@@ -60,11 +53,9 @@ class Commands(SqlAlchemyBase):
     python_func = sqlalchemy.Column(sqlalchemy.String)
 
 
-
 # ======== Inventory ========
 class ItemMaterial(SqlAlchemyBase):
     __tablename__ = "itemMaterial"
-
 
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
     description = sqlalchemy.Column(sqlalchemy.String)
@@ -74,7 +65,6 @@ class ItemMaterial(SqlAlchemyBase):
 class ItemHeal(SqlAlchemyBase):
     __tablename__ = "itemHeal"
 
-
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
     description = sqlalchemy.Column(sqlalchemy.String)
     price = sqlalchemy.Column(sqlalchemy.Integer)
@@ -83,7 +73,6 @@ class ItemHeal(SqlAlchemyBase):
 
 class ItemArmor(SqlAlchemyBase):
     __tablename__ = "itemArmor"
-
 
     name = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
     description = sqlalchemy.Column(sqlalchemy.String)
@@ -117,4 +106,4 @@ class ItemRangeWeapon(SqlAlchemyBase):
     energyCost = sqlalchemy.Column(sqlalchemy.Integer)
     damage = sqlalchemy.Column(sqlalchemy.Integer)
     piercing = sqlalchemy.Column(sqlalchemy.Integer)
-    hitChance = sqlalchemy.Column(sqlalchemy.Integer) # %
+    hitChance = sqlalchemy.Column(sqlalchemy.Integer)  # %

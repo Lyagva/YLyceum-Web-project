@@ -62,9 +62,6 @@ def index2(name):
     set_vars(dct)
 
     user_friends = get_user_friends(username)
-    
-    if name not in ["global", *user_friends]:
-        return page_not_found(None)
 
     return render_template("index2.html", user_friends=user_friends)
 
@@ -116,26 +113,25 @@ def post():
         dct["console_outputs"][username] = [start_msg]
         set_vars(dct)
 
-
     if update:
         # log.debug(f"Returning console outputs for {addr}")
         return json.dumps({"outputs": dct["console_outputs"][username], "clearChild": False, "username": new_username})
 
-    textIn = request.form["commandInput"]
+    text_in = request.form["commandInput"]
 
-    if len(textIn) == 0:
+    if len(text_in) == 0:
         # log.debug(f"No text provided. Returning console outputs for {addr}")
         return json.dumps({"outputs": dct["console_outputs"][username], "clearChild": False, "username": new_username})
 
-    # log.debug(f"Operating with command {textIn} from {addr}")
-    textOut, new_username = process_command(username, textIn)
+    # log.debug(f"Operating with command {text_in} from {addr}")
+    text_out, new_username = process_command(username, text_in)
     dct = get_vars()
 
     # log.debug(f"Appending text to {addr}'s console")
-    dct["console_outputs"][username].append(f">>> {textIn}\n\n{textOut}")
+    dct["console_outputs"][username].append(f">>> {text_in}\n\n{text_out}")
     set_vars(dct)
 
-    if textOut == "!!clear":
+    if text_out == "!!clear":
         # log.debug(f"Clearing console for {addr}")
         dct["console_outputs"][username] = []
         set_vars(dct)
@@ -156,7 +152,7 @@ def post():
 
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found():
     return render_template('404.html'), 404
 
 
@@ -166,15 +162,14 @@ def get_vars():
     return dct
 
 
-def set_vars(vars):
+def set_vars(vrs):
     with open("vars.json", "w+") as file:
-        file.write(json.dumps(vars))
+        file.write(json.dumps(vrs))
 
 
 if __name__ == "__main__":
     # log.info("Opening db/main.db")
     db_session.global_init("db/main.db")
-
 
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

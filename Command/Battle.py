@@ -1,16 +1,12 @@
-import logging
-from pprint import pprint
-
-from data import __all_models, db_session
-import random
 import json
+import logging
+import random
 
 import Command.commands
+from data import __all_models, db_session
 
 log = logging.getLogger()
 base_session = {"members": []}
-
-
 
 # {<Battle ID>: {"members": ["name1", "name2"], "type": "pvp"/"pve", "turn": 0}}
 battle_sessions = {}
@@ -19,15 +15,16 @@ battle_sessions = {}
 bots = {}
 
 
-
 def get_battle_id(username):
     return db_session.create_session().query(__all_models.UsersParams).get(username).battle_id
+
 
 def set_battle_id(username, battle_id):
     db_sess = db_session.create_session()
     user_params = db_sess.query(__all_models.UsersParams).get(username)
     user_params.battle_id = battle_id
     db_sess.commit()
+
 
 def get_enemy(username, battle_id):
     session = battle_sessions[battle_id]
@@ -37,6 +34,7 @@ def get_enemy(username, battle_id):
         session["members"].remove(username)
         return session["members"][0]
     return None
+
 
 def get_battle_stats(key, username):
     """
@@ -65,6 +63,7 @@ def get_battle_stats(key, username):
         return get_hp(username)
     return -1
 
+
 def get_heal_amount(username):
     db_sess = db_session.create_session()
 
@@ -89,6 +88,7 @@ def get_heal_amount(username):
 
     return heal_amount
 
+
 def get_melee(username):
     db_sess = db_session.create_session()
 
@@ -106,6 +106,7 @@ def get_melee(username):
 
     output = {"dmg": weapon.damage, "eng": weapon.energyCost, "prc": weapon.piercing, "ch": 100}
     return output
+
 
 def get_range(username):
     db_sess = db_session.create_session()
@@ -125,6 +126,7 @@ def get_range(username):
     output = {"dmg": weapon.damage, "eng": weapon.energyCost, "prc": weapon.piercing, "ch": weapon.hitChance}
     return output
 
+
 def get_defence(username):
     defence = 0
     defence += Command.commands.get_user_params(username)["defence"]
@@ -142,12 +144,15 @@ def get_defence(username):
 
     return defence if defence != 0 else 1
 
+
 def get_energy(username):
     user_params = db_session.create_session().query(__all_models.UsersParams).get(username)
     return json.loads(user_params.stats)["energy"]
 
+
 def get_hp(username):
     return Command.commands.get_user_params(username)["hp"]
+
 
 def turn_check(username):
     battle_id = get_battle_id(username)
@@ -157,6 +162,7 @@ def turn_check(username):
                  battle_sessions[battle_id]["type"] == "pve"):
         return True
     return False
+
 
 def send_message(username, text):
     from app import get_vars, set_vars
@@ -194,7 +200,8 @@ def create(username, *args):
                            "hp": 100}
         bots[battle_id]["money"] = bots[battle_id]["dmg"] * bots[battle_id]["def"]
 
-    return Command.commands.localize("BTL_CREATE_SUCCESS", username, args=[battle_id, battle_sessions[battle_id]['type']])
+    return Command.commands.localize("BTL_CREATE_SUCCESS", username,
+                                     args=[battle_id, battle_sessions[battle_id]['type']])
 
 
 def turn(battle_id):
@@ -249,11 +256,11 @@ def escape(username):
 
     if chance > 50:
         if battle_sessions[get_battle_id(username)]["type"] == "pvp":
-            send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_ESC_TO_ENEMY", get_enemy(username, get_battle_id(username))))
             leave(get_enemy(username, get_battle_id(username)))
+            send_message(get_enemy(username, get_battle_id(username)),
+                         Command.commands.localize("BTL_ESC_TO_ENEMY", get_enemy(username, get_battle_id(username))))
 
         leave(username)
-
 
         return Command.commands.localize("BTL_ESC_SUCCESS", username)
     turn(get_battle_id(username))
@@ -267,7 +274,6 @@ def attack(username, *args):
     battle_id = get_battle_id(username)
     turn(battle_id)
     lobby_type = battle_sessions[battle_id]["type"]
-
 
     if lobby_type == "pvp":
         enemy = get_enemy(username, battle_id)
@@ -291,7 +297,8 @@ def attack(username, *args):
 
         if get_battle_stats("eng", username) < weapon["eng"]:
             send_message(enemy, Command.commands.localize("BTL_ATK_SKIP_TO_ENEMY", enemy))
-            return Command.commands.localize("BTL_ATK_LESS_ENG", username, args=[str(weapon["eng"] - get_battle_stats("eng", username))])
+            return Command.commands.localize("BTL_ATK_LESS_ENG", username,
+                                             args=[str(weapon["eng"] - get_battle_stats("eng", username))])
 
         Command.commands.edit_user_stats("energy", -weapon["eng"], "+", username)
 
@@ -381,8 +388,8 @@ def heal(username, *args):
                      Command.commands.localize("BTL_HEAL_SUCC_TO_ENEM",
                                                get_enemy(username, get_battle_id(username)), args=[heal_amount]))
 
-    return Command.commands.localize("BTL_HEAL_SUCC", username, args=[str(heal_amount),
-                                                                      str(Command.commands.get_user_params(username)["hp"])])
+    return Command.commands.localize("BTL_HEAL_SUCC", username,
+                                     args=[str(heal_amount), str(Command.commands.get_user_params(username)["hp"])])
 
 
 def battle_pass(username, *args):
@@ -394,7 +401,8 @@ def battle_pass(username, *args):
     Command.commands.edit_user_stats("energy", energy_regenerated, "+", username)
 
     if battle_sessions[get_battle_id(username)]["type"] == "pvp":
-        send_message(get_enemy(username, get_battle_id(username)), Command.commands.localize("BTL_PASS_SKIP_TO_ENEM", get_enemy(username, get_battle_id(username))))
+        send_message(get_enemy(username, get_battle_id(username)),
+                     Command.commands.localize("BTL_PASS_SKIP_TO_ENEM", get_enemy(username, get_battle_id(username))))
     return Command.commands.localize("BTL_PASS_REGEN", username, args=[energy_regenerated])
 
 
@@ -414,7 +422,8 @@ def bot_pass(battle_id):
 
     bot["energy"] += 5
 
-    send_message(battle_sessions[battle_id]["members"][0], Command.commands.localize("BTL_BOT_PASS", battle_sessions[battle_id]["members"][0]))
+    send_message(battle_sessions[battle_id]["members"][0],
+                 Command.commands.localize("BTL_BOT_PASS", battle_sessions[battle_id]["members"][0]))
 
 
 def death_check(battle_id):
@@ -423,7 +432,7 @@ def death_check(battle_id):
     if lobby_type == "pve":
         print(bots[battle_id]["hp"], get_battle_stats("hp", battle_sessions[battle_id]["members"][0]))
         if bots[battle_id]["hp"] <= 0:
-            send_message(battle_sessions[battle_id]["members"][0],  "You won!")
+            send_message(battle_sessions[battle_id]["members"][0], "You won!")
             return True
 
         player = battle_sessions[battle_id]["members"][0]

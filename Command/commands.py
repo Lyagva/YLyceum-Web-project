@@ -1,10 +1,10 @@
+import json
 import logging
 from data import __all_models, db_session
-import json
-from Command import Battle
 
 log = logging.getLogger()
 new_username = ""
+
 
 # ======== COMMANDS GLOBAL FUNCS ========
 def get_all_commands():
@@ -60,23 +60,22 @@ def localize(code, username, args=None):
     if user is not None:
         lang = user.lang
 
-
     # Reading csv file
     # log.debug("Opening and reading loc file")
     with open('csv/localizations.csv', encoding="utf8") as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
-        data = list(map(lambda x: x, reader)) # Storing data to list
+        data = list(map(lambda x: x, reader))  # Storing data to list
 
     keys = {}
     for i, value in enumerate(data[0]):
-        keys[value] = i # getting keys dict {<header>: <ind>}
-    phrases = data[1:] # getting all phrases
+        keys[value] = i  # getting keys dict {<header>: <ind>}
+    phrases = data[1:]  # getting all phrases
 
-    for line in phrases: # going through all lines
-        if code == line[0]: # check if line.code == code
+    for line in phrases:  # going through all lines
+        if code == line[0]:  # check if line.code == code
             # log.debug(f"Found {code} in loc.csv")
 
-            output = str(line[keys[lang]]) # setting output
+            output = str(line[keys[lang]])  # setting output
 
             # log.debug(f"Replacing special symbols for {output}")
             for key in special_symbols.keys():
@@ -99,7 +98,7 @@ def get_all_langs():
     # log.debug("Opening and reading localizations file")
     with open('csv/localizations.csv') as csvfile:
         reader = reader(csvfile, delimiter=';', quotechar='"')
-        data = list(map(lambda x: x, reader)) # Storing data to list
+        data = list(map(lambda x: x, reader))  # Storing data to list
 
     keys = []
     for value in data[0][1:]:
@@ -159,7 +158,7 @@ def get_users():
     return list(map(lambda user: user, db_session.create_session().query(__all_models.Users).all()))
 
 
-def get_all_users_params(): # Delete
+def get_all_users_params():  # Delete
     log.debug("(One action) Getting all user params. Accessing main.db . Returning all user params")
     return list(map(lambda user_p: user_p, db_session.create_session().query(__all_models.UsersParams).all()))
 
@@ -187,7 +186,6 @@ def edit_user_stats(key, value, operation="+", username=""):
     # log.debug(f"Getting user params for {username}")
     stats = get_user_params(username)
 
-
     # log.debug(f"Applying '{operation}{value}' operation for {key} param for {username}")
     if operation == "+":
         stats[key] += value
@@ -197,7 +195,6 @@ def edit_user_stats(key, value, operation="+", username=""):
         stats[key] *= value
     elif operation == "=":
         stats[key] = value
-
 
     # log.debug("Opening main.db session")
     db_sess = db_session.create_session()
@@ -255,7 +252,7 @@ def send_user_password(username):
 
         # send the message via the server.
         server.sendmail(msg['From'], msg['To'], msg.as_string())
-    except Exception as e:
+    except Exception:
         return localize("PASSWORD_RECOVERY_EMAIL_NOT_VALID", username, args=[user.email])
 
     return localize("PASSWORD_RECOVERY_SUCCESS_SEND_MAIL", username, args=[user.email])
@@ -347,7 +344,6 @@ def command_status(username, *args):
     if len(args) >= 1:
         target_name = args[0]
 
-
     # log.debug(f"[Command status {username}] Getting params for {username}")
     target_params = get_user_params(target_name)
 
@@ -410,13 +406,12 @@ def command_inv(username, *args):
     log.debug(f"[Command inv {username}] Requesting inventory")
     inventory = get_items_by_user(username)
 
-
-    outputText = "======== INVENTORY ========\nname \t count\n"
+    output_text = "======== INVENTORY ========\nname \t count\n"
     for item in inventory:
-        outputText += f"{localize(item[2], username)} \t {item[0]}\n"
+        output_text += f"{localize(item[2], username)} \t {item[0]}\n"
 
     log.debug(f"[Command inv {username}] Returning items")
-    return outputText
+    return output_text
 
 
 def command_login(username, *args):
@@ -504,11 +499,12 @@ def command_email(username, *args):
     return localize("EMAIL_ADD_SUCCESS", username, args=[email, username])
 
 
-
 # ======== SHOP ========
 def get_shop_items():
     log.debug(f"Getting shop items")
-    return list(map(lambda category: {category: list(map(lambda item: item, db_session.create_session().query(eval('__all_models.' + category)).all()))}, ['ItemMaterial', 'ItemHeal', 'ItemArmor', 'ItemMeleeWeapon', 'ItemRangeWeapon']))
+    return list(map(lambda category: {category: list(
+        map(lambda item: item, db_session.create_session().query(eval('__all_models.' + category)).all()))},
+                    ['ItemMaterial', 'ItemHeal', 'ItemArmor', 'ItemMeleeWeapon', 'ItemRangeWeapon']))
 
 
 def command_buy(username, *args):
@@ -595,74 +591,79 @@ def command_sell(username, *args):
 # ======== WIKI ========
 def wiki_armor(username):
     items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemArmor).all()))
-    outputText = ""
+    output_text = ""
 
     # ARMOR
-    outputText += "======== ARMOR ========\n"
-    outputText += "name \t description \t price buy/sell \t slot \t defence \n"
+    output_text += "======== ARMOR ========\n"
+    output_text += "name \t description \t price buy/sell \t slot \t defence \n"
     for item in items:
-        info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}', item.slot, item.defence]
-        outputText += localize("WIKI_ARMOR_FORMAT", username, args=info) + "\n"
+        info = [localize(item.name, username), localize(item.description, username),
+                f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}', item.slot, item.defence]
+        output_text += localize("WIKI_ARMOR_FORMAT", username, args=info) + "\n"
 
-    return outputText
+    return output_text
 
 
 def wiki_heal(username):
     items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemHeal).all()))
-    outputText = ""
+    output_text = ""
 
     # HEAL
-    outputText += "======== HEAL ========\n"
-    outputText += "name \t description \t price buy/sell \t heal amount \n"
+    output_text += "======== HEAL ========\n"
+    output_text += "name \t description \t price buy/sell \t heal amount \n"
     for item in items:
-        info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}', item.healAmount]
-        outputText += localize("WIKI_HEAL_FORMAT", username, args=info) + "\n"
+        info = [localize(item.name, username), localize(item.description, username),
+                f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}', item.healAmount]
+        output_text += localize("WIKI_HEAL_FORMAT", username, args=info) + "\n"
 
-    return outputText
+    return output_text
 
 
 def wiki_material(username):
     items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemMaterial).all()))
-    outputText = ""
+    output_text = ""
 
     # MATERIAL
-    outputText += "======== MATERIAL ========\n"
-    outputText += "name \t description \t price buy/sell \n"
+    output_text += "======== MATERIAL ========\n"
+    output_text += "name \t description \t price buy/sell \n"
     for item in items:
-        info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}']
-        outputText += localize("WIKI_MATERIAL_FORMAT", username, args=info) + "\n"
+        info = [localize(item.name, username), localize(item.description, username),
+                f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}']
+        output_text += localize("WIKI_MATERIAL_FORMAT", username, args=info) + "\n"
 
-    return outputText
+    return output_text
 
 
 def wiki_melee(username):
     items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemMeleeWeapon).all()))
-    outputText = ""
+    output_text = ""
 
     # MELEE
-    outputText += "======== MELEE WEAPON ========\n"
-    outputText += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \n"
+    output_text += "======== MELEE WEAPON ========\n"
+    output_text += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \n"
     for item in items:
-        info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
+        info = [localize(item.name, username), localize(item.description, username),
+                f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
                 item.energyCost, item.damage, item.piercing]
-        outputText += localize("WIKI_MELEE_FORMAT", username, args=info) + "\n"
+        output_text += localize("WIKI_MELEE_FORMAT", username, args=info) + "\n"
 
-    return outputText
+    return output_text
 
 
 def wiki_range(username):
     items = list(map(lambda user: user, db_session.create_session().query(__all_models.ItemRangeWeapon).all()))
-    outputText = ""
+    output_text = ""
 
     # RANGE
-    outputText += "======== RANGE WEAPON ========\n"
-    outputText += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \t hit chance \n"
+    output_text += "======== RANGE WEAPON ========\n"
+    output_text += "name \t description \t price buy/sell \t energy cost \t damage \t piercing \t hit chance \n"
     for item in items:
-        info = [localize(item.name, username), localize(item.description, username), f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
+        info = [localize(item.name, username), localize(item.description, username),
+                f'{item.price}/{int(item.price // SELL_PRICE_DIVIDER)}',
                 item.energyCost, item.damage, item.piercing, item.hitChance]
-        outputText += localize("WIKI_RANGE_FORMAT", username, args=info) + "\n"
+        output_text += localize("WIKI_RANGE_FORMAT", username, args=info) + "\n"
 
-    return outputText
+    return output_text
 
 
 # ======== Inventory ========
@@ -719,7 +720,6 @@ def add_item(item, username=""):
     db_sess.commit()
 
 
-
 # ======== Chat ========
 def command_chat(username, *args):
     if len(args) == 0:
@@ -733,8 +733,6 @@ def command_chat(username, *args):
         return localize("CHAT_NO_NAME", username)
     chatter_name = args[1]
 
-
-
     if func == "add":
         if chatter_name not in list(map(lambda x: x.login, get_users())) or chatter_name == username:
             return localize("CHAT_ADD_INVALID_NAME", username)
@@ -743,8 +741,6 @@ def command_chat(username, *args):
             return localize("CHAT_ADD_ALREADY", username)
 
         db_sess = db_session.create_session()
-
-
 
         # APPENDING TO SENDER
         print(username)
@@ -763,11 +759,8 @@ def command_chat(username, *args):
 
         return localize("CHAT_ADD_SUCCESS", username)
 
-
-
     if chatter_name not in get_user_friends(username):
         return localize("CHAT_REMOVE_INVALID_NAME", username)
-
 
     db_sess = db_session.create_session()
 
@@ -786,6 +779,7 @@ def command_chat(username, *args):
     db_sess.commit()
 
     return localize("CHAT_REMOVE_SUCCESS", username)
+
 
 # ============= Battle ==============
 def get_user_equip(username):
@@ -846,7 +840,6 @@ def command_equip(username, *args):
 
                     item = [-1, item_type, item_strange_name]
                     add_item(item, username)
-
 
     elif item_type == "ItemHeal":  # equip[heal] = [count, name]
         for item in user_inv:
